@@ -1,6 +1,7 @@
 #include "othello/board.h"
 #include "othello/command.h"
 #include "othello/othello.h"
+#include "othello/player.h"
 
 #include <bits/stdint-uintn.h>
 #include <stdio.h>
@@ -15,6 +16,7 @@ int main(int argc, char *argv[]) {
   bool nextMove = true;
   board_t *board = 0;
   char command[INPUT_SIZE];
+  player_color cur_player = PLAYER_COLOR_NONE;
 
   /* initialize input buffer to zeros */
   uint16_t i = 0;
@@ -32,8 +34,11 @@ int main(int argc, char *argv[]) {
   while (!shouldExit) {
     /* switch players and redraw the board */
     if (nextMove) {
-      /* TODO: keep current player */
+      cur_player = cur_player == PLAYER_COLOR_WHITE ? PLAYER_COLOR_BLACK
+                                                    : PLAYER_COLOR_WHITE;
+      board_calculate(board, cur_player);
       board_draw(board);
+      board_draw_moves(board, cur_player);
       nextMove = false;
     }
 

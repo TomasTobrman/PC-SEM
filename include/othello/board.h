@@ -13,6 +13,7 @@ board_t *board_create(uint8_t width, uint8_t height);
 void board_init(board_t *board, uint8_t row, uint8_t col);
 void board_free(board_t **board);
 void board_draw(board_t *board);
+void board_draw_moves(board_t *board, player_color color);
 void board_calculate(board_t *board, player_color color);
 /* TODO: Player move */
 

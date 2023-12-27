@@ -1,5 +1,4 @@
 ---- Today -----------------------------
-[ ] Move Validation
 ---- Todo ------------------------------
 [ ] Command-line Arguments
 [ ] Minimax Algorithm
@@ -12,4 +11,5 @@
 [X] Board Drawing
 [X] Command Parsing
 [X] Main Loop
+[X] Move Validation
 ----------------------------------------
