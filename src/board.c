@@ -91,7 +91,6 @@ void board_draw(board_t *board) {
                : (board->data[i] == PLAYER_BLACK ? PIECE_BLACK : PIECE_BLANK),
            (i + 1) % board->width ? "" : "\n");
   }
-  printf("\n");
 }
 
 void board_moves_calculate(board_t *board, player_t player) {
