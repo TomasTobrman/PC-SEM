@@ -1,0 +1,65 @@
+# ============================================================================ #
+# Copyright (c) 2023 Tomáš Tobrman. All Rights Reserved.
+# ==== Project Info ========================================================== #
+
+PROJECT := othello
+EXTENSION := .exe
+
+# ==== Directories =========================================================== #
+
+DIR_BIN := bin
+DIR_OBJ := obj
+DIR_SRC := src
+
+DIR_INC := include
+
+# ==== Files ================================================================= #
+
+TARGET := $(DIR_BIN)/$(PROJECT)$(EXTENSION)
+SOURCES := $(shell find $(DIR_SRC) -type f -name '*.c')
+OBJECTS := $(patsubst $(DIR_SRC)/%.c, $(DIR_OBJ)/%.o, $(SOURCES))
+
+# ==== Commands ============================================================== #
+
+ARGS := 
+WARN := -Wall -Wno-unused-function -Wno-unused-variable -Wno-unused-but-set-variable
+
+CC := gcc
+CFLAGS := -xc -std=c90 -I$(DIR_INC)
+
+LD := gcc
+LDFLAGS := 
+
+# ==== PHONY ================================================================= #
+
+default: mkdirs build
+
+.PHONY: build
+build: $(TARGET)
+
+.PHONY: run
+run: $(TARGET)
+	./$(TARGET) $(ARGS)
+
+.PHONY: clean
+clean:
+	rm -rf $(DIR_BIN)/* $(DIR_OBJ)/*
+
+.PHONY: mkdirs
+mkdirs: $(DIR_BIN) $(DIR_OBJ)
+
+# ==== Targets =============================================================== #
+
+$(DIR_BIN):
+	mkdir -p $@
+
+$(DIR_OBJ):
+	mkdir -p $@
+
+$(TARGET): $(OBJECTS)
+	$(LD) $(WARN) $(LDFLAGS) -o $@ $^
+
+$(DIR_OBJ)/%.o: $(DIR_SRC)/%.c
+	$(CC) $(WARN) $(CFLAGS) -c -o $@ $^
+
+# ============================================================================ #
