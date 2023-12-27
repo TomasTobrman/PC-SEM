@@ -1,0 +1,15 @@
+---- Today -----------------------------
+[ ] Move Validation
+---- Todo ------------------------------
+[ ] Command-line Arguments
+[ ] Minimax Algorithm
+[ ] File Saving
+[ ] File Loading
+[ ] File Parsing
+---- Fixes -----------------------------
+---- Done ------------------------------
+[X] Board Structure
+[X] Board Drawing
+[X] Command Parsing
+[X] Main Loop
+----------------------------------------
