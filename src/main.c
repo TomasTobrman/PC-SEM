@@ -10,7 +10,6 @@
 
 #define INPUT_SIZE 256
 
-/* FIX: Error checking EVERYWHERE */
 int main(int argc, char *argv[]) {
   int exit_status = 0;
   board_t *board = 0;
