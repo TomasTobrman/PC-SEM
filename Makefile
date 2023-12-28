@@ -22,7 +22,7 @@ OBJECTS := $(patsubst $(DIR_SRC)/%.c, $(DIR_OBJ)/%.o, $(SOURCES))
 # ==== Commands ============================================================== #
 
 ARGS := 
-WARN := -Wall -Wno-unused-function -Wno-unused-variable -Wno-unused-but-set-variable
+WARN := -Wall
 
 CC := gcc
 CFLAGS := -xc -std=c90 -I$(DIR_INC)
