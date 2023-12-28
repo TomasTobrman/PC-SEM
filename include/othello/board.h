@@ -2,9 +2,9 @@
 #define _OTHELLO_BOARD_H_
 
 #include "othello/player.h"
-#include <bits/stdint-uintn.h>
+#include <stdint.h>
 
-#define STONE_NONE " · "
+#define STONE_NONE  " · "
 #define STONE_WHITE " ◙ "
 #define STONE_BLACK " ○ "
 
