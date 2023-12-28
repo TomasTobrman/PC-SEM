@@ -6,7 +6,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#define INPUT_SIZE 256
+#define INPUT_SIZE 0xFF
 
 int main(int argc, char *argv[]) {
     /* command-line arguments */
@@ -36,7 +36,7 @@ int main(int argc, char *argv[]) {
                                                           : PLAYER_COLOR_WHITE;
             board_calculate(board, cur_player);
             board_draw(board);
-            board_draw_moves(board, cur_player);
+            board_draw_moves(board);
             nextMove = false;
         }
 
