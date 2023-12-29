@@ -1,7 +1,6 @@
 #include "othello/command.h"
 
 #include <ctype.h>
-#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -10,7 +9,7 @@
 #define CMD_STR_PASS "pass"
 
 command_code command_interpret(const char *command) {
-    uint16_t i        = 0;
+    int i             = 0;
     char *str         = 0;
     command_code code = CMD_NONE;
 

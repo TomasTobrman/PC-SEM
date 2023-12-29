@@ -10,5 +10,6 @@ typedef struct {
     player_type type;
     player_color color;
     char *name;
+    int depth;
 } player_t;
 #endif /* ifndef _OTHELLO_PLAYER_H_ */

@@ -1,6 +1,6 @@
 ---- Today -----------------------------
+[-] Command-line Arguments
 ---- Todo ------------------------------
-[ ] Command-line Arguments
 [ ] Minimax Algorithm
 [ ] File Saving
 [ ] File Loading

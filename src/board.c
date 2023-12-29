@@ -5,16 +5,16 @@
 #include <stdlib.h>
 
 struct _board {
-    uint8_t width;
-    uint8_t height;
-    uint16_t size;
+    unsigned int width;
+    unsigned int height;
+    unsigned int size;
     player_color *data;
-    uint16_t *moves;
+    int *moves;
 };
 
-board_t *board_create(uint8_t width, uint8_t height) {
+board_t *board_create(unsigned int width, unsigned int height) {
     board_t *board = 0;
-    uint16_t i     = 0;
+    unsigned int i = 0;
 
     board = (board_t *)malloc(sizeof(board_t));
     if (!board) return 0;
@@ -29,7 +29,7 @@ board_t *board_create(uint8_t width, uint8_t height) {
         return 0;
     }
 
-    board->moves = (uint16_t *)malloc(board->size * sizeof(uint16_t));
+    board->moves = (int *)malloc(board->size * sizeof(int));
     if (!(board->moves)) {
         board_free(&board);
         return 0;
@@ -43,15 +43,15 @@ board_t *board_create(uint8_t width, uint8_t height) {
     return board;
 }
 
-void board_init(board_t *board, uint8_t row, uint8_t col) {
-    if (!board || !board->data || row <= 0 || row >= board->height ||
-        col <= 0 || col >= board->width)
+void board_init(board_t *board, unsigned int x, unsigned int y) {
+    if (!board || !board->data || y <= 0 || y >= board->height || x <= 0 ||
+        x >= board->width)
         return;
 
-    board->data[(row - 1) * board->width + (col - 1)] = PLAYER_COLOR_WHITE;
-    board->data[(row - 1) * board->width + (col - 0)] = PLAYER_COLOR_BLACK;
-    board->data[(row - 0) * board->width + (col - 1)] = PLAYER_COLOR_BLACK;
-    board->data[(row - 0) * board->width + (col - 0)] = PLAYER_COLOR_WHITE;
+    board->data[(y - 1) * board->width + (x - 1)] = PLAYER_COLOR_WHITE;
+    board->data[(y - 1) * board->width + (x - 0)] = PLAYER_COLOR_BLACK;
+    board->data[(y - 0) * board->width + (x - 1)] = PLAYER_COLOR_BLACK;
+    board->data[(y - 0) * board->width + (x - 0)] = PLAYER_COLOR_WHITE;
 }
 
 void board_free(board_t **board) {
@@ -63,7 +63,7 @@ void board_free(board_t **board) {
 }
 
 void board_draw(board_t *board) {
-    uint16_t i = 0;
+    unsigned int i = 0;
 
     if (!board || !board->data) return;
 
@@ -77,7 +77,7 @@ void board_draw(board_t *board) {
 }
 
 void board_draw_moves(board_t *board) {
-    uint16_t i = 0;
+    unsigned int i = 0;
 
     if (!board || !board->data) return;
 
@@ -86,12 +86,12 @@ void board_draw_moves(board_t *board) {
     }
 }
 
-static uint16_t check_direction(board_t *board, player_color color, int16_t x,
-                                int16_t y, int8_t dir_x, int8_t dir_y) {
-    uint16_t count = 0;
-    uint16_t i     = 0;
-    int16_t ox     = x;
-    int16_t oy     = y;
+static int check_direction(board_t *board, player_color color, unsigned int x,
+                           unsigned int y, int dir_x, int dir_y) {
+    int count = 0;
+    int i     = 0;
+    int ox    = x;
+    int oy    = y;
 
     for (;;) {
         ox += dir_x;
@@ -119,15 +119,15 @@ static uint16_t check_direction(board_t *board, player_color color, int16_t x,
     }
 }
 
-static uint16_t check_3x3(board_t *board, player_color color, int16_t x,
-                          int16_t y) {
-    int16_t ox      = 0;
-    int16_t oy      = 0;
-    int16_t i       = 0;
-    int8_t dir      = 0;
-    int8_t dir_x[8] = {-1, 0, 1, -1, 1, -1, 0, 1};
-    int8_t dir_y[8] = {-1, -1, -1, 0, 0, 1, 1, 1};
-    uint16_t weight = 0;
+static int check_3x3(board_t *board, player_color color, unsigned int x,
+                     unsigned int y) {
+    int ox       = 0;
+    int oy       = 0;
+    int i        = 0;
+    int dir      = 0;
+    int dir_x[8] = {-1, 0, 1, -1, 1, -1, 0, 1};
+    int dir_y[8] = {-1, -1, -1, 0, 0, 1, 1, 1};
+    int weight   = 0;
 
     /* dir = ↖ ↑ ↗ ← → ↙ ↓ ↘ */
     for (dir = 0; dir < 8; ++dir) {
@@ -151,9 +151,9 @@ static uint16_t check_3x3(board_t *board, player_color color, int16_t x,
 }
 
 void board_calculate(board_t *board, player_color color) {
-    uint8_t x  = 0;
-    uint8_t y  = 0;
-    uint16_t i = 0;
+    unsigned int x = 0;
+    unsigned int y = 0;
+    unsigned int i = 0;
 
     if (color != PLAYER_COLOR_WHITE && color != PLAYER_COLOR_BLACK) return;
 
