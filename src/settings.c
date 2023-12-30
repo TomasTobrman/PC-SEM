@@ -32,9 +32,9 @@ int settings_set_default(settings_t *settings) {
 }
 
 int settings_process_args(settings_t *settings, int argc, char *argv[]) {
-    int i           = 0;
-    int temp_int    = 0;
-    char *temp_char = 0;
+    int i          = 0;
+    int temp_int   = 0;
+    char *temp_str = 0;
 
     for (i = 1; i < argc; ++i) {
         /* player black */
@@ -44,9 +44,43 @@ int settings_process_args(settings_t *settings, int argc, char *argv[]) {
                 return 1;
             }
 
-            temp_char = argv[++i];
+            /* player type */
+            temp_str = strtok(argv[++i], ",");
+            if (!temp_str) {
+                printf("Invalid player description!\n");
+                return 1;
+            }
+            if (!strcmp(temp_str, "human")) {
+                settings->player_black->type = PLAYER_TYPE_HUMAN;
+            } else if (!strcmp(temp_str, "minimax")) {
+                settings->player_black->type = PLAYER_TYPE_MINIMAX;
+            } else {
+                printf("Invalid player description!\n");
+                return 1;
+            }
 
-            settings->player_black->name = temp_char;
+            /* player name */
+            temp_str = strtok(NULL, ",");
+            if (temp_str) {
+                if (temp_str[0] != '\0' &&
+                    strcmp(temp_str, settings->player_white->name)) {
+                    settings->player_black->name = temp_str;
+                } else {
+                    printf("Invalid player description!\n");
+                    return 1;
+                }
+            }
+
+            /* minimax tree depth */
+            temp_str = strtok(NULL, ",");
+            if (temp_str) {
+                temp_int = atoi(temp_str);
+                if (temp_str[0] == '\0' || temp_int < 0) {
+                    printf("Invalid player description!\n");
+                    return 1;
+                }
+                settings->player_black->depth = temp_int;
+            }
 
             continue;
         }
@@ -58,7 +92,43 @@ int settings_process_args(settings_t *settings, int argc, char *argv[]) {
                 return 1;
             }
 
-            temp_char = argv[++i];
+            /* player type */
+            temp_str = strtok(argv[++i], ",");
+            if (!temp_str) {
+                printf("Invalid player description!\n");
+                return 1;
+            }
+            if (!strcmp(temp_str, "human")) {
+                settings->player_white->type = PLAYER_TYPE_HUMAN;
+            } else if (!strcmp(temp_str, "minimax")) {
+                settings->player_white->type = PLAYER_TYPE_MINIMAX;
+            } else {
+                printf("Invalid player description!\n");
+                return 1;
+            }
+
+            /* player name */
+            temp_str = strtok(NULL, ",");
+            if (temp_str) {
+                if (temp_str[0] != '\0' &&
+                    strcmp(temp_str, settings->player_black->name)) {
+                    settings->player_white->name = temp_str;
+                } else {
+                    printf("Invalid player description!\n");
+                    return 1;
+                }
+            }
+
+            /* minimax tree depth */
+            temp_str = strtok(NULL, ",");
+            if (temp_str) {
+                temp_int = atoi(temp_str);
+                if (temp_str[0] == '\0' || temp_int < 0) {
+                    printf("Invalid player description!\n");
+                    return 1;
+                }
+                settings->player_white->depth = temp_int;
+            }
 
             continue;
         }

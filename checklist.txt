@@ -1,5 +1,4 @@
 ---- Today -----------------------------
-[-] Command-line Arguments
 ---- Todo ------------------------------
 [ ] Minimax Algorithm
 [ ] File Saving
@@ -12,4 +11,5 @@
 [X] Command Parsing
 [X] Main Loop
 [X] Move Validation
+[X] Command-line Arguments
 ----------------------------------------
