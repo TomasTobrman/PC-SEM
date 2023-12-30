@@ -29,8 +29,10 @@ int main(int argc, char *argv[]) {
     board_t *board       = NULL;
     player_t *cur_player = NULL;
     char command[INPUT_SIZE];
-    int i           = 0;
-    int args_status = 0;
+    int i               = 0;
+    int args_status     = 0;
+    unsigned int play_x = 0;
+    unsigned int play_y = 0;
 
     /* set default settings */
     settings = (settings_t *)malloc(sizeof(settings_t));
@@ -64,7 +66,6 @@ int main(int argc, char *argv[]) {
                            : settings->player_white;
             board_calculate(board, cur_player->color);
             board_draw(board);
-            board_draw_moves(board);
             settings->nextMove = false;
         }
 
@@ -74,17 +75,32 @@ int main(int argc, char *argv[]) {
         if (settings->interactive) fgets(command, INPUT_SIZE, stdin);
 
         /* interpret the given command */
-        /* TODO: Player moves */
-        switch (command_interpret(command)) {
+        switch (command_interpret(command, &play_x, &play_y)) {
             case CMD_PASS:
+                if (board_can_play(board)) {
+                    printf("Invalid move!\n");
+                    break;
+                }
                 settings->nextMove = true;
-                continue;
+                break;
             case CMD_QUIT:
                 settings->shouldExit = true;
                 break;
             case CMD_SAVE:
                 if (!settings->file_out)
                     printf("Invalid output file destination!\n");
+                break;
+            case CMD_PLAY:
+                if (play_x <= 0 || play_x > settings->board_cols ||
+                    play_y <= 0 || play_y > settings->board_rows) {
+                    printf("Invalid move!\n");
+                    break;
+                }
+                if (board_play(board, cur_player->color, play_x, play_y)) {
+                    printf("Invalid move!\n");
+                    break;
+                }
+                settings->nextMove = true;
                 break;
             default:
                 printf("Invalid move!\n");

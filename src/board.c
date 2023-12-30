@@ -1,4 +1,5 @@
 #include "othello/board.h"
+#include "othello/bool.h"
 #include "othello/player.h"
 
 #include <stdio.h>
@@ -63,31 +64,36 @@ void board_free(board_t **board) {
 }
 
 void board_draw(board_t *board) {
-    unsigned int i = 0;
+    int i = 0;
+    int x = 0;
+    int y = 0;
 
     if (!board || !board->data) return;
 
-    for (i = 0; i < board->size; ++i) {
-        printf("%s%s",
-               board->data[i] == 1
-                   ? STONE_WHITE
-                   : (board->data[i] == 2 ? STONE_BLACK : STONE_NONE),
-               (i + 1) % board->width ? "" : "\n");
-    }
-}
+    for (y = -1; y < (int)board->height; ++y) {
+        if (y >= 0) printf(" %d ", y + 1);
+        else printf("   ");
+        for (x = 0; x < (int)board->width; ++x) {
+            if (y < 0) {
+                printf(" %d ", x + 1);
+                continue;
+            }
 
-void board_draw_moves(board_t *board) {
-    unsigned int i = 0;
+            i = y * board->width + x;
 
-    if (!board || !board->data) return;
+            printf(" %s ",
+                   board->data[i] == PLAYER_COLOR_WHITE
+                       ? STONE_WHITE
+                       : (board->data[i] == PLAYER_COLOR_BLACK ? STONE_BLACK
+                                                               : STONE_NONE));
+        }
 
-    for (i = 0; i < board->size; ++i) {
-        printf(" %d %s", board->moves[i], (i + 1) % board->width ? "" : "\n");
+        printf("\n");
     }
 }
 
 static int check_direction(board_t *board, player_color color, unsigned int x,
-                           unsigned int y, int dir_x, int dir_y) {
+                           unsigned int y, int dir_x, int dir_y, bool flip) {
     int count = 0;
     int i     = 0;
     int ox    = x;
@@ -112,6 +118,13 @@ static int check_direction(board_t *board, player_color color, unsigned int x,
 
         /* move is valid */
         if (board->data[i] == color) {
+            for (; flip;) {
+                if (ox == x && oy == y) break;
+                board->data[oy * board->width + ox] = color;
+                ox -= dir_x;
+                oy -= dir_y;
+            }
+
             return count;
         }
 
@@ -120,7 +133,7 @@ static int check_direction(board_t *board, player_color color, unsigned int x,
 }
 
 static int check_3x3(board_t *board, player_color color, unsigned int x,
-                     unsigned int y) {
+                     unsigned int y, bool flip) {
     int ox       = 0;
     int oy       = 0;
     int i        = 0;
@@ -143,8 +156,8 @@ static int check_3x3(board_t *board, player_color color, unsigned int x,
 
         /* found enemy stone, check in their direction */
         if (board->data[i] != color)
-            weight +=
-                check_direction(board, color, x, y, dir_x[dir], dir_y[dir]);
+            weight += check_direction(board, color, x, y, dir_x[dir],
+                                      dir_y[dir], flip);
     }
 
     return weight;
@@ -155,6 +168,7 @@ void board_calculate(board_t *board, player_color color) {
     unsigned int y = 0;
     unsigned int i = 0;
 
+    if (!board || !board->data || !board->moves) return;
     if (color != PLAYER_COLOR_WHITE && color != PLAYER_COLOR_BLACK) return;
 
     for (y = 0; y < board->height; ++y) {
@@ -169,7 +183,35 @@ void board_calculate(board_t *board, player_color color) {
             }
 
             /* check 3x3 area around cell */
-            board->moves[i] = check_3x3(board, color, x, y);
+            board->moves[i] = check_3x3(board, color, x, y, false);
         }
     }
+}
+
+int board_play(board_t *board, player_color color, unsigned int x,
+               unsigned int y) {
+    int i = 0;
+
+    if (!board || !board->data || !board->moves) return 1;
+
+    x -= 1;
+    y -= 1;
+
+    if (x < 0 || x >= board->width || y < 0 || y >= board->height) return 2;
+
+    i = y * board->width + x;
+    if (!board->moves[i]) return 3;
+
+    check_3x3(board, color, x, y, true);
+
+    board->data[i] = color;
+
+    return 0;
+}
+
+bool board_can_play(board_t *board) {
+    int i = 0;
+    for (i = 0; i < board->size; ++i)
+        if (board->moves[i]) return true;
+    return false;
 }

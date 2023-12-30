@@ -12,4 +12,5 @@
 [X] Main Loop
 [X] Move Validation
 [X] Command-line Arguments
+[X] Human-Human Gameplay
 ----------------------------------------
