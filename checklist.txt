@@ -1,9 +1,13 @@
 ---- Today -----------------------------
----- Todo ------------------------------
 [ ] Minimax Algorithm
+ - [ ] Stone counting
+ - [ ] Research
+ - [ ] Tree
+---- Todo ------------------------------
 [ ] File Saving
 [ ] File Loading
 [ ] File Parsing
+[ ] Win Condition
 ---- Fixes -----------------------------
 ---- Done ------------------------------
 [X] Board Structure

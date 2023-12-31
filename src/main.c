@@ -96,7 +96,7 @@ int main(int argc, char *argv[]) {
                     printf("Invalid move!\n");
                     break;
                 }
-                if (board_play(board, cur_player->color, play_x, play_y)) {
+                if (!board_play(board, cur_player->color, play_x, play_y)) {
                     printf("Invalid move!\n");
                     break;
                 }

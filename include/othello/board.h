@@ -10,13 +10,13 @@
 
 typedef struct _board board_t;
 board_t *board_create(unsigned int width, unsigned int height);
-void board_init(board_t *board, unsigned int x, unsigned int y);
+bool board_init(board_t *board, unsigned int x, unsigned int y);
 void board_free(board_t **board);
 void board_draw(board_t *board);
 void board_calculate(board_t *board, player_color color);
-int board_play(board_t *board, player_color color, unsigned int x,
-               unsigned int y);
+bool board_play(board_t *board, player_color color, unsigned int x,
+                unsigned int y);
 bool board_can_play(board_t *board);
-/* TODO: Player move */
+int board_count(board_t *board, player_color color);
 
 #endif /* ifndef _OTHELLO_BOARD_H_ */

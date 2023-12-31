@@ -33,9 +33,9 @@ command_code command_interpret(const char *command, unsigned int *play_x,
     else if (!strcmp(str, CMD_STR_SAVE)) code = CMD_SAVE;
     else {
         temp_str = strtok(str, "_");
-        if (temp_str && temp_str[0] != '\0') *play_x = atoi(temp_str);
-        temp_str = strtok(0, "_");
         if (temp_str && temp_str[0] != '\0') *play_y = atoi(temp_str);
+        temp_str = strtok(0, "_");
+        if (temp_str && temp_str[0] != '\0') *play_x = atoi(temp_str);
         code = CMD_PLAY;
     }
 

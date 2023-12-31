@@ -44,15 +44,17 @@ board_t *board_create(unsigned int width, unsigned int height) {
     return board;
 }
 
-void board_init(board_t *board, unsigned int x, unsigned int y) {
+bool board_init(board_t *board, unsigned int x, unsigned int y) {
     if (!board || !board->data || y <= 0 || y >= board->height || x <= 0 ||
         x >= board->width)
-        return;
+        return false;
 
     board->data[(y - 1) * board->width + (x - 1)] = PLAYER_COLOR_WHITE;
     board->data[(y - 1) * board->width + (x - 0)] = PLAYER_COLOR_BLACK;
     board->data[(y - 0) * board->width + (x - 1)] = PLAYER_COLOR_BLACK;
     board->data[(y - 0) * board->width + (x - 0)] = PLAYER_COLOR_WHITE;
+
+    return true;
 }
 
 void board_free(board_t **board) {
@@ -60,7 +62,7 @@ void board_free(board_t **board) {
     if ((*board)->moves) free((*board)->moves);
     if ((*board)->data) free((*board)->data);
     free(*board);
-    *board = 0;
+    *board = NULL;
 }
 
 void board_draw(board_t *board) {
@@ -168,8 +170,9 @@ void board_calculate(board_t *board, player_color color) {
     unsigned int y = 0;
     unsigned int i = 0;
 
-    if (!board || !board->data || !board->moves) return;
-    if (color != PLAYER_COLOR_WHITE && color != PLAYER_COLOR_BLACK) return;
+    if (!board || !board->data || !board->moves ||
+        (color != PLAYER_COLOR_WHITE && color != PLAYER_COLOR_BLACK))
+        return;
 
     for (y = 0; y < board->height; ++y) {
         for (x = 0; x < board->width; ++x) {
@@ -188,30 +191,41 @@ void board_calculate(board_t *board, player_color color) {
     }
 }
 
-int board_play(board_t *board, player_color color, unsigned int x,
-               unsigned int y) {
+bool board_play(board_t *board, player_color color, unsigned int x,
+                unsigned int y) {
     int i = 0;
 
-    if (!board || !board->data || !board->moves) return 1;
+    if (!board || !board->data || !board->moves) return false;
 
     x -= 1;
     y -= 1;
 
-    if (x < 0 || x >= board->width || y < 0 || y >= board->height) return 2;
+    if (x < 0 || x >= board->width || y < 0 || y >= board->height) return false;
 
     i = y * board->width + x;
-    if (!board->moves[i]) return 3;
+    if (!board->moves[i]) return false;
 
     check_3x3(board, color, x, y, true);
 
     board->data[i] = color;
 
-    return 0;
+    return true;
 }
 
 bool board_can_play(board_t *board) {
     int i = 0;
+    if (!board || !board->moves) return false;
     for (i = 0; i < board->size; ++i)
         if (board->moves[i]) return true;
     return false;
+}
+
+int board_count(board_t *board, player_color color) {
+    int i   = 0;
+    int sum = 0;
+    if (!board || !board->data ||
+        (color != PLAYER_COLOR_WHITE && color != PLAYER_COLOR_BLACK))
+        return 0;
+    for (i = 0; i < board->size; ++i) sum += board->data[i] == color ? 1 : 0;
+    return sum;
 }
