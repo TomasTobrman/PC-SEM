@@ -25,8 +25,8 @@ int settings_set_default(settings_t *settings) {
     settings->init_row    = 4;
     settings->file_out    = NULL;
     settings->file_in     = NULL;
-    settings->shouldExit  = false;
-    settings->nextMove    = true;
+    settings->should_exit = false;
+    settings->next_move   = true;
     settings->interactive = true;
 
     return 0;

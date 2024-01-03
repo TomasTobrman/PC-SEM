@@ -60,8 +60,8 @@ int main(int argc, char *argv[]) {
     cur_player = settings->player_black;
 
     /* game loop */
-    while (!settings->shouldExit) {
-        if (settings->nextMove) {
+    while (!settings->should_exit) {
+        if (settings->next_move) {
             /* switch players */
             cur_player = cur_player->color == PLAYER_COLOR_WHITE
                            ? settings->player_black
@@ -73,14 +73,14 @@ int main(int argc, char *argv[]) {
             board_draw(board);
 
             /* reset state */
-            settings->nextMove = false;
+            settings->next_move = false;
 
             /* calculate minimax */
             if (cur_player->type == PLAYER_TYPE_MINIMAX) {
                 minimax_free(&minimax);
                 minimax = (node_t *)malloc(sizeof(node_t));
                 if (!minimax) {
-                    settings->shouldExit = true;
+                    settings->should_exit = true;
                     continue;
                 }
                 minimax->board      = board_copy(board);
@@ -107,10 +107,10 @@ int main(int argc, char *argv[]) {
                     printf("Invalid move!\n");
                     break;
                 }
-                settings->nextMove = true;
+                settings->next_move = true;
                 break;
             case CMD_QUIT:
-                settings->shouldExit = true;
+                settings->should_exit = true;
                 break;
             case CMD_SAVE:
                 if (!settings->file_out)
@@ -127,7 +127,7 @@ int main(int argc, char *argv[]) {
                     printf("Invalid move!\n");
                     break;
                 }
-                settings->nextMove = true;
+                settings->next_move = true;
                 break;
             default:
                 printf("Invalid move!\n");

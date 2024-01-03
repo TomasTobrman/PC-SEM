@@ -12,8 +12,8 @@ typedef struct {
     int init_row;
     FILE *file_out;
     FILE *file_in;
-    bool shouldExit;
-    bool nextMove;
+    bool should_exit;
+    bool next_move;
     bool interactive;
 } settings_t;
 int settings_set_default(settings_t *settings);
