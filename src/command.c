@@ -9,8 +9,8 @@
 #define CMD_STR_QUIT "quit"
 #define CMD_STR_PASS "pass"
 
-command_code command_interpret(const char *command, unsigned int *play_x,
-                               unsigned int *play_y) {
+command_code command_interpret(const char *command, unsigned int *play_col,
+                               unsigned int *play_row) {
     int i             = 0;
     char *str         = 0;
     command_code code = CMD_NONE;
@@ -33,9 +33,9 @@ command_code command_interpret(const char *command, unsigned int *play_x,
     else if (!strcmp(str, CMD_STR_SAVE)) code = CMD_SAVE;
     else {
         temp_str = strtok(str, "_");
-        if (temp_str && temp_str[0] != '\0') *play_y = atoi(temp_str);
+        if (temp_str && temp_str[0] != '\0') *play_row = atoi(temp_str);
         temp_str = strtok(0, "_");
-        if (temp_str && temp_str[0] != '\0') *play_x = atoi(temp_str);
+        if (temp_str && temp_str[0] != '\0') *play_col = atoi(temp_str);
         code = CMD_PLAY;
     }
 

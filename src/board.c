@@ -5,35 +5,50 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-struct _board {
-    unsigned int width;
-    unsigned int height;
-    unsigned int size;
-    player_color *data;
-    int *moves;
-};
+#define STONE_NONE  "·"
+#define STONE_WHITE "◙"
+#define STONE_BLACK "○"
+
+board_t *board_copy(board_t *original) {
+    board_t *board = NULL;
+    unsigned int i = 0;
+
+    if (!original || !original->data || !original->moves) return NULL;
+
+    board = board_create(original->width, original->height);
+    if (!board) return NULL;
+
+    for (i = 0; i < board->size; ++i) {
+        board->data[i]  = original->data[i];
+        board->moves[i] = original->moves[i];
+    }
+
+    return board;
+}
 
 board_t *board_create(unsigned int width, unsigned int height) {
-    board_t *board = 0;
+    board_t *board = NULL;
     unsigned int i = 0;
 
     board = (board_t *)malloc(sizeof(board_t));
-    if (!board) return 0;
+    if (!board) return NULL;
 
     board->width  = width;
     board->height = height;
     board->size   = board->width * board->height;
+    board->data   = NULL;
+    board->moves  = NULL;
 
     board->data = (player_color *)malloc(board->size * sizeof(player_color));
     if (!board->data) {
         board_free(&board);
-        return 0;
+        return NULL;
     }
 
-    board->moves = (int *)malloc(board->size * sizeof(int));
-    if (!(board->moves)) {
+    board->moves = (unsigned int *)malloc(board->size * sizeof(unsigned int));
+    if (!board->moves) {
         board_free(&board);
-        return 0;
+        return NULL;
     }
 
     for (i = 0; i < board->size; ++i) {
@@ -44,15 +59,15 @@ board_t *board_create(unsigned int width, unsigned int height) {
     return board;
 }
 
-bool board_init(board_t *board, unsigned int x, unsigned int y) {
-    if (!board || !board->data || y <= 0 || y >= board->height || x <= 0 ||
-        x >= board->width)
+bool board_init(board_t *board, unsigned int col, unsigned int row) {
+    if (!board || !board->data || row <= 0 || row >= board->height ||
+        col <= 0 || col >= board->width)
         return false;
 
-    board->data[(y - 1) * board->width + (x - 1)] = PLAYER_COLOR_WHITE;
-    board->data[(y - 1) * board->width + (x - 0)] = PLAYER_COLOR_BLACK;
-    board->data[(y - 0) * board->width + (x - 1)] = PLAYER_COLOR_BLACK;
-    board->data[(y - 0) * board->width + (x - 0)] = PLAYER_COLOR_WHITE;
+    board->data[(row - 1) * board->width + (col - 1)] = PLAYER_COLOR_WHITE;
+    board->data[(row - 1) * board->width + (col - 0)] = PLAYER_COLOR_BLACK;
+    board->data[(row - 0) * board->width + (col - 1)] = PLAYER_COLOR_BLACK;
+    board->data[(row - 0) * board->width + (col - 0)] = PLAYER_COLOR_WHITE;
 
     return true;
 }
@@ -66,22 +81,22 @@ void board_free(board_t **board) {
 }
 
 void board_draw(board_t *board) {
-    int i = 0;
-    int x = 0;
-    int y = 0;
+    int i   = 0;
+    int col = 0;
+    int row = 0;
 
     if (!board || !board->data) return;
 
-    for (y = -1; y < (int)board->height; ++y) {
-        if (y >= 0) printf(" %d ", y + 1);
+    for (row = -1; row < (int)board->height; ++row) {
+        if (row >= 0) printf(" %d ", row + 1);
         else printf("   ");
-        for (x = 0; x < (int)board->width; ++x) {
-            if (y < 0) {
-                printf(" %d ", x + 1);
+        for (col = 0; col < (int)board->width; ++col) {
+            if (row < 0) {
+                printf(" %d ", col + 1);
                 continue;
             }
 
-            i = y * board->width + x;
+            i = row * board->width + col;
 
             printf(" %s ",
                    board->data[i] == PLAYER_COLOR_WHITE
@@ -94,37 +109,39 @@ void board_draw(board_t *board) {
     }
 }
 
-static int check_direction(board_t *board, player_color color, unsigned int x,
-                           unsigned int y, int dir_x, int dir_y, bool flip) {
-    int count = 0;
+static int check_direction(board_t **board, player_color color,
+                           unsigned int col, unsigned int row, int dir_col,
+                           int dir_row, bool flip) {
     int i     = 0;
-    int ox    = x;
-    int oy    = y;
+    int count = 0;
+    int ocol  = col;
+    int orow  = row;
 
     for (;;) {
-        ox += dir_x;
-        oy += dir_y;
+        ocol += dir_col;
+        orow += dir_row;
 
         /* out of bounds */
-        if (ox < 0 || ox >= board->width || oy < 0 || oy >= board->height) {
+        if (ocol < 0 || ocol >= (*board)->width || orow < 0 ||
+            orow >= (*board)->height) {
             return 0;
         }
 
         /* get index from 2D coordinates */
-        i = oy * board->width + ox;
+        i = orow * (*board)->width + ocol;
 
         /* found blank space */
-        if (board->data[i] == PLAYER_COLOR_NONE) {
+        if ((*board)->data[i] == PLAYER_COLOR_NONE) {
             return 0;
         }
 
         /* move is valid */
-        if (board->data[i] == color) {
+        if ((*board)->data[i] == color) {
             for (; flip;) {
-                if (ox == x && oy == y) break;
-                board->data[oy * board->width + ox] = color;
-                ox -= dir_x;
-                oy -= dir_y;
+                if (ocol == col && orow == row) break;
+                (*board)->data[orow * (*board)->width + ocol] = color;
+                ocol -= dir_col;
+                orow -= dir_row;
             }
 
             return count;
@@ -134,80 +151,82 @@ static int check_direction(board_t *board, player_color color, unsigned int x,
     }
 }
 
-static int check_3x3(board_t *board, player_color color, unsigned int x,
-                     unsigned int y, bool flip) {
-    int ox       = 0;
-    int oy       = 0;
-    int i        = 0;
-    int dir      = 0;
-    int dir_x[8] = {-1, 0, 1, -1, 1, -1, 0, 1};
-    int dir_y[8] = {-1, -1, -1, 0, 0, 1, 1, 1};
-    int weight   = 0;
+static int check_3x3(board_t **board, player_color color, unsigned int col,
+                     unsigned int row, bool flip) {
+    int i          = 0;
+    int ocol       = 0;
+    int orow       = 0;
+    int dir        = 0;
+    int dir_col[8] = {-1, 0, 1, -1, 1, -1, 0, 1};
+    int dir_row[8] = {-1, -1, -1, 0, 0, 1, 1, 1};
+    int weight     = 0;
 
     /* dir = ↖ ↑ ↗ ← → ↙ ↓ ↘ */
     for (dir = 0; dir < 8; ++dir) {
-        ox = x + dir_x[dir];
-        oy = y + dir_y[dir];
+        ocol = col + dir_col[dir];
+        orow = row + dir_row[dir];
 
         /* out of bounds */
-        if (ox < 0 || ox >= board->width || oy < 0 || oy >= board->height)
+        if (ocol < 0 || ocol >= (*board)->width || orow < 0 ||
+            orow >= (*board)->height)
             continue;
 
         /* get index from 2D coordinates */
-        i = oy * board->width + ox;
+        i = orow * (*board)->width + ocol;
 
         /* found enemy stone, check in their direction */
-        if (board->data[i] != color)
-            weight += check_direction(board, color, x, y, dir_x[dir],
-                                      dir_y[dir], flip);
+        if ((*board)->data[i] != color)
+            weight += check_direction(board, color, col, row, dir_col[dir],
+                                      dir_row[dir], flip);
     }
 
     return weight;
 }
 
-void board_calculate(board_t *board, player_color color) {
-    unsigned int x = 0;
-    unsigned int y = 0;
-    unsigned int i = 0;
+void board_calculate(board_t **board, player_color color) {
+    unsigned int col = 0;
+    unsigned int row = 0;
+    unsigned int i   = 0;
 
-    if (!board || !board->data || !board->moves ||
+    if (!board || !*board || !(*board)->data || !(*board)->moves ||
         (color != PLAYER_COLOR_WHITE && color != PLAYER_COLOR_BLACK))
         return;
 
-    for (y = 0; y < board->height; ++y) {
-        for (x = 0; x < board->width; ++x) {
+    for (row = 0; row < (*board)->height; ++row) {
+        for (col = 0; col < (*board)->width; ++col) {
             /* get index from 2D coordinates */
-            i = y * board->width + x;
+            i = row * (*board)->width + col;
 
             /* skip cell if occupied */
-            if (board->data[i]) {
-                board->moves[i] = 0;
+            if ((*board)->data[i]) {
+                (*board)->moves[i] = 0;
                 continue;
             }
 
             /* check 3x3 area around cell */
-            board->moves[i] = check_3x3(board, color, x, y, false);
+            (*board)->moves[i] = check_3x3(board, color, col, row, false);
         }
     }
 }
 
-bool board_play(board_t *board, player_color color, unsigned int x,
-                unsigned int y) {
+bool board_play(board_t **board, player_color color, unsigned int col,
+                unsigned int row) {
     int i = 0;
 
-    if (!board || !board->data || !board->moves) return false;
+    if (!board || !*board || !(*board)->data || !(*board)->moves) return false;
 
-    x -= 1;
-    y -= 1;
+    col -= 1;
+    row -= 1;
 
-    if (x < 0 || x >= board->width || y < 0 || y >= board->height) return false;
+    if (col < 0 || col >= (*board)->width || row < 0 || row >= (*board)->height)
+        return false;
 
-    i = y * board->width + x;
-    if (!board->moves[i]) return false;
+    i = row * (*board)->width + col;
+    if (!(*board)->moves[i]) return false;
 
-    check_3x3(board, color, x, y, true);
+    check_3x3(board, color, col, row, true);
 
-    board->data[i] = color;
+    (*board)->data[i] = color;
 
     return true;
 }

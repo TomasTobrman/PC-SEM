@@ -1,6 +1,7 @@
 #include "othello/board.h"
 #include "othello/bool.h"
 #include "othello/command.h"
+#include "othello/minimax.h"
 #include "othello/player.h"
 #include "othello/settings.h"
 
@@ -28,11 +29,12 @@ int main(int argc, char *argv[]) {
     settings_t *settings = NULL;
     board_t *board       = NULL;
     player_t *cur_player = NULL;
+    node_t *minimax      = NULL;
     char command[INPUT_SIZE];
-    int i               = 0;
-    int args_status     = 0;
-    unsigned int play_x = 0;
-    unsigned int play_y = 0;
+    int i                 = 0;
+    int args_status       = 0;
+    unsigned int play_col = 0;
+    unsigned int play_row = 0;
 
     /* set default settings */
     settings = (settings_t *)malloc(sizeof(settings_t));
@@ -59,14 +61,38 @@ int main(int argc, char *argv[]) {
 
     /* game loop */
     while (!settings->shouldExit) {
-        /* switch players and redraw the board */
         if (settings->nextMove) {
+            /* switch players */
             cur_player = cur_player->color == PLAYER_COLOR_WHITE
                            ? settings->player_black
                            : settings->player_white;
-            board_calculate(board, cur_player->color);
+
+            /* calculate possible moves */
+            board_calculate(&board, cur_player->color);
+            /* redraw the board */
             board_draw(board);
+
+            /* reset state */
             settings->nextMove = false;
+
+            /* calculate minimax */
+            if (cur_player->type == PLAYER_TYPE_MINIMAX) {
+                minimax_free(&minimax);
+                minimax = (node_t *)malloc(sizeof(node_t));
+                if (!minimax) {
+                    settings->shouldExit = true;
+                    continue;
+                }
+                minimax->board      = board_copy(board);
+                minimax->weight     = 0;
+                minimax->play_col   = 0;
+                minimax->play_row   = 0;
+                minimax->n_children = 0;
+                minimax->children   = NULL;
+                minimax_generate(cur_player->depth, &minimax,
+                                 cur_player->color);
+                minimax_draw(minimax);
+            }
         }
 
         /* get user input */
@@ -75,7 +101,7 @@ int main(int argc, char *argv[]) {
         if (settings->interactive) fgets(command, INPUT_SIZE, stdin);
 
         /* interpret the given command */
-        switch (command_interpret(command, &play_x, &play_y)) {
+        switch (command_interpret(command, &play_col, &play_row)) {
             case CMD_PASS:
                 if (board_can_play(board)) {
                     printf("Invalid move!\n");
@@ -91,12 +117,13 @@ int main(int argc, char *argv[]) {
                     printf("Invalid output file destination!\n");
                 break;
             case CMD_PLAY:
-                if (play_x <= 0 || play_x > settings->board_cols ||
-                    play_y <= 0 || play_y > settings->board_rows) {
+                if (play_col <= 0 || play_col > settings->board_cols ||
+                    play_row <= 0 || play_row > settings->board_rows) {
                     printf("Invalid move!\n");
                     break;
                 }
-                if (!board_play(board, cur_player->color, play_x, play_y)) {
+                if (!board_play(&board, cur_player->color, play_col,
+                                play_row)) {
                     printf("Invalid move!\n");
                     break;
                 }

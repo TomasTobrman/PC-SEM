@@ -1,8 +1,9 @@
 ---- Today -----------------------------
-[ ] Minimax Algorithm
- - [ ] Stone counting
- - [ ] Research
- - [ ] Tree
+[-] Minimax Algorithm
+ - [X] Stone counting
+ - [X] Research
+ - [X] Tree
+ - [ ] Simulate other player
 ---- Todo ------------------------------
 [ ] File Saving
 [ ] File Loading
