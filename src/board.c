@@ -227,7 +227,7 @@ bool board_play(board_t **board, player_color color, unsigned int col,
     return true;
 }
 
-bool board_can_play(board_t *board) {
+bool board_can_play(const board_t *board) {
     int i = 0;
     if (!board || !board->moves) return false;
     for (i = 0; i < board->size; ++i)
@@ -254,4 +254,11 @@ int board_eval(const board_t *board) {
         eval += board->data[i] == PLAYER_COLOR_WHITE ? 1 : -1;
     }
     return eval;
+}
+
+bool board_full(const board_t *board) {
+    int i = 0;
+    for (i = 0; i < board->size; ++i)
+        if (board->data[i] == PLAYER_COLOR_NONE) return false;
+    return true;
 }

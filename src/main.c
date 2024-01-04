@@ -29,12 +29,13 @@ int main(int argc, char *argv[]) {
     settings_t *settings = NULL;
     board_t *board       = NULL;
     player_t *cur_player = NULL;
-    /* node_t *minimax      = NULL; */
     char command[INPUT_SIZE];
-    int i                 = 0;
-    int args_status       = 0;
-    unsigned int play_col = 0;
-    unsigned int play_row = 0;
+    int i                    = 0;
+    int args_status          = 0;
+    unsigned int play_col    = 0;
+    unsigned int play_row    = 0;
+    int minimax_eval         = 0;
+    bool other_player_passed = false;
 
     /* set default settings */
     settings = (settings_t *)malloc(sizeof(settings_t));
@@ -56,8 +57,8 @@ int main(int argc, char *argv[]) {
     /* initialize input buffer to zeros */
     for (i = 0; i < INPUT_SIZE; ++i) command[i] = 0;
 
-    /* set current player to black for white to be first */
-    cur_player = settings->player_black;
+    /* set current player to white for black to be first */
+    cur_player = settings->player_white;
 
     /* game loop */
     while (!settings->should_exit) {
@@ -72,14 +73,49 @@ int main(int argc, char *argv[]) {
             /* redraw the board */
             board_draw(board);
 
+            if (board_full(board)) {
+                settings->should_exit = true;
+                break;
+            }
+
             /* reset state */
             settings->next_move = false;
 
             /* calculate minimax */
+            play_col = 0;
+            play_row = 0;
             if (cur_player->type == PLAYER_TYPE_MINIMAX) {
-                printf("minimax: %d\n",
-                       minimax(cur_player->color, board, cur_player->depth,
-                               INT_MIN, INT_MAX, true));
+                minimax_eval =
+                    minimax(cur_player->color, board, cur_player->depth,
+                            INT_MIN, INT_MAX, true, &play_col, &play_row);
+
+                if (play_col == 0 && play_row == 0) {
+                    printf("(%s:%s) > pass\n", cur_player->name, "minimax");
+                    if (other_player_passed) {
+                        settings->should_exit = true;
+                        break;
+                    }
+                    other_player_passed = true;
+                    settings->next_move = true;
+                    continue;
+                }
+
+                printf("(%s:%s) > %d_%d\n", cur_player->name, "minimax",
+                       play_row, play_col);
+
+                if (play_col <= 0 || play_col > settings->board_cols ||
+                    play_row <= 0 || play_row > settings->board_rows) {
+                    printf("Invalid move!\n");
+                    break;
+                }
+                if (!board_play(&board, cur_player->color, play_col,
+                                play_row)) {
+                    printf("Invalid move!\n");
+                    break;
+                }
+                settings->next_move = true;
+                other_player_passed = false;
+                continue;
             }
         }
 
@@ -95,7 +131,12 @@ int main(int argc, char *argv[]) {
                     printf("Invalid move!\n");
                     break;
                 }
+                if (other_player_passed) {
+                    settings->should_exit = true;
+                    break;
+                }
                 settings->next_move = true;
+                other_player_passed = true;
                 break;
             case CMD_QUIT:
                 settings->should_exit = true;
@@ -116,11 +157,18 @@ int main(int argc, char *argv[]) {
                     break;
                 }
                 settings->next_move = true;
+                other_player_passed = false;
                 break;
             default:
                 printf("Invalid move!\n");
         };
     }
+
+    /* print end score */
+    printf("Game Over!\n%s (Black): %d\n%s (White): %d\n",
+           settings->player_black->name, board_count(board, PLAYER_COLOR_BLACK),
+           settings->player_white->name,
+           board_count(board, PLAYER_COLOR_WHITE));
 
     /* exit application */
     board_free(&board);

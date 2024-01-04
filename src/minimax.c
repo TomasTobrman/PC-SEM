@@ -7,18 +7,19 @@
 #include <stdlib.h>
 
 int minimax(player_color color, const board_t *board, int depth, int alpha,
-            int beta, bool maximizing) {
+            int beta, bool maximizing, unsigned int *play_col,
+            unsigned int *play_row) {
     int eval         = 0;
     int max_eval     = 0;
     int min_eval     = 0;
-    unsigned int i   = 0;
+    int i            = 0;
     unsigned int col = 0;
     unsigned int row = 0;
     board_t *copy    = NULL;
     player_color other_color =
         color == PLAYER_COLOR_WHITE ? PLAYER_COLOR_BLACK : PLAYER_COLOR_WHITE;
 
-    if (depth <= 0) {
+    if (depth <= 0 || !board_can_play(board)) {
         if (color < 0) return -board_eval(board);
         return board_eval(board);
     }
@@ -35,11 +36,16 @@ int minimax(player_color color, const board_t *board, int depth, int alpha,
             board_calculate(&copy, color);
             board_play(&copy, color, col, row);
             board_calculate(&copy, other_color);
-            eval = minimax(color, copy, depth - 1, alpha, beta, false);
+            eval = minimax(color, copy, depth - 1, alpha, beta, false, 0, 0);
             board_free(&copy);
 
-            max_eval = max_eval > eval ? max_eval : eval;
-            alpha    = alpha > eval ? alpha : eval;
+            if (eval > max_eval) {
+                max_eval = eval;
+                if (play_col) *play_col = col;
+                if (play_row) *play_row = row;
+            }
+
+            alpha = alpha > eval ? alpha : eval;
             if (beta <= alpha) break;
         }
         return max_eval;
@@ -55,11 +61,16 @@ int minimax(player_color color, const board_t *board, int depth, int alpha,
             board_calculate(&copy, other_color);
             board_play(&copy, other_color, col, row);
             board_calculate(&copy, color);
-            eval = minimax(color, copy, depth - 1, alpha, beta, true);
+            eval = minimax(color, copy, depth - 1, alpha, beta, true, 0, 0);
             board_free(&copy);
 
-            min_eval = min_eval < eval ? min_eval : eval;
-            beta     = beta < eval ? beta : eval;
+            if (eval < min_eval) {
+                min_eval = eval;
+                if (play_col) *play_col = col;
+                if (play_row) *play_row = row;
+            }
+
+            beta = beta < eval ? beta : eval;
             if (beta <= alpha) break;
         }
         return min_eval;

@@ -9,7 +9,8 @@ void board_draw(const board_t *board);
 void board_calculate(board_t **board, player_color color);
 bool board_play(board_t **board, player_color color, unsigned int col,
                 unsigned int row);
-bool board_can_play(board_t *board);
+bool board_can_play(const board_t *board);
 int board_count(const board_t *board, player_color color);
 int board_eval(const board_t *board);
+bool board_full(const board_t *board);
 #endif /* ifndef _OTHELLO_BOARD_H_ */
