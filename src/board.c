@@ -1,6 +1,5 @@
 #include "othello/board.h"
-#include "othello/bool.h"
-#include "othello/player.h"
+#include "othello/types.h"
 
 #include <stdio.h>
 #include <stdlib.h>

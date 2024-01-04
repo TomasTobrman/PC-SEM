@@ -1,5 +1,6 @@
 #include "othello/settings.h"
-#include <malloc/_malloc.h>
+#include "othello/types.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

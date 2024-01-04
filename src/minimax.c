@@ -1,8 +1,12 @@
 #include "othello/minimax.h"
+#include "othello/board.h"
+#include "othello/types.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 
-void minimax_generate(int depth, node_t **root, player_color color) {
+void minimax_generate(int depth, node_t **root, player_color color,
+                      bool opponent) {
     unsigned int i     = 0;
     node_t *child      = NULL;
     node_t **temp_root = NULL;
@@ -35,7 +39,7 @@ void minimax_generate(int depth, node_t **root, player_color color) {
         board_play(&child->board, color, child->play_col, child->play_row);
         board_calculate(&child->board, color);
 
-        minimax_generate(depth - 1, &child, color);
+        minimax_generate(depth - 1, &child, color, true);
 
         (*root)->children[(*root)->n_children - 1] = child;
     }

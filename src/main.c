@@ -1,9 +1,8 @@
 #include "othello/board.h"
-#include "othello/bool.h"
 #include "othello/command.h"
 #include "othello/minimax.h"
-#include "othello/player.h"
 #include "othello/settings.h"
+#include "othello/types.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -89,8 +88,8 @@ int main(int argc, char *argv[]) {
                 minimax->play_row   = 0;
                 minimax->n_children = 0;
                 minimax->children   = NULL;
-                minimax_generate(cur_player->depth, &minimax,
-                                 cur_player->color);
+                minimax_generate(cur_player->depth, &minimax, cur_player->color,
+                                 false);
                 minimax_draw(minimax);
             }
         }

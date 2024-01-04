@@ -1,7 +1,7 @@
 #include "othello/command.h"
+#include "othello/types.h"
 
 #include <ctype.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
