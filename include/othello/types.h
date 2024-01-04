@@ -6,9 +6,9 @@ typedef enum { false, true } bool;
 typedef enum { CMD_NONE, CMD_QUIT, CMD_SAVE, CMD_PASS, CMD_PLAY } command_code;
 typedef enum { PLAYER_TYPE_HUMAN, PLAYER_TYPE_MINIMAX } player_type;
 typedef enum {
-    PLAYER_COLOR_NONE,
-    PLAYER_COLOR_WHITE,
-    PLAYER_COLOR_BLACK
+    PLAYER_COLOR_NONE  = 0,
+    PLAYER_COLOR_WHITE = 1,
+    PLAYER_COLOR_BLACK = 2,
 } player_color;
 /* ==== STRUCTS ============================================================= */
 typedef struct {

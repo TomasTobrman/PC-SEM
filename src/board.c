@@ -8,7 +8,7 @@
 #define STONE_WHITE "◙"
 #define STONE_BLACK "○"
 
-board_t *board_copy(board_t *original) {
+board_t *board_copy(const board_t *original) {
     board_t *board = NULL;
     unsigned int i = 0;
 
@@ -79,7 +79,7 @@ void board_free(board_t **board) {
     *board = NULL;
 }
 
-void board_draw(board_t *board) {
+void board_draw(const board_t *board) {
     int i   = 0;
     int col = 0;
     int row = 0;
@@ -130,9 +130,7 @@ static int check_direction(board_t **board, player_color color,
         i = orow * (*board)->width + ocol;
 
         /* found blank space */
-        if ((*board)->data[i] == PLAYER_COLOR_NONE) {
-            return 0;
-        }
+        if ((*board)->data[i] == PLAYER_COLOR_NONE) return 0;
 
         /* move is valid */
         if ((*board)->data[i] == color) {
@@ -217,8 +215,7 @@ bool board_play(board_t **board, player_color color, unsigned int col,
     col -= 1;
     row -= 1;
 
-    if (col < 0 || col >= (*board)->width || row < 0 || row >= (*board)->height)
-        return false;
+    if (col >= (*board)->width || row >= (*board)->height) return false;
 
     i = row * (*board)->width + col;
     if (!(*board)->moves[i]) return false;
@@ -238,7 +235,7 @@ bool board_can_play(board_t *board) {
     return false;
 }
 
-int board_count(board_t *board, player_color color) {
+int board_count(const board_t *board, player_color color) {
     int i   = 0;
     int sum = 0;
     if (!board || !board->data ||
@@ -246,4 +243,15 @@ int board_count(board_t *board, player_color color) {
         return 0;
     for (i = 0; i < board->size; ++i) sum += board->data[i] == color ? 1 : 0;
     return sum;
+}
+
+int board_eval(const board_t *board) {
+    int i    = 0;
+    int eval = 0;
+    if (!board) return 0;
+    for (i = 0; i < board->size; ++i) {
+        if (board->data[i] == PLAYER_COLOR_NONE) continue;
+        eval += board->data[i] == PLAYER_COLOR_WHITE ? 1 : -1;
+    }
+    return eval;
 }

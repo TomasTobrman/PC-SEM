@@ -4,6 +4,7 @@
 #include "othello/settings.h"
 #include "othello/types.h"
 
+#include <i386/limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -28,7 +29,7 @@ int main(int argc, char *argv[]) {
     settings_t *settings = NULL;
     board_t *board       = NULL;
     player_t *cur_player = NULL;
-    node_t *minimax      = NULL;
+    /* node_t *minimax      = NULL; */
     char command[INPUT_SIZE];
     int i                 = 0;
     int args_status       = 0;
@@ -76,21 +77,9 @@ int main(int argc, char *argv[]) {
 
             /* calculate minimax */
             if (cur_player->type == PLAYER_TYPE_MINIMAX) {
-                minimax_free(&minimax);
-                minimax = (node_t *)malloc(sizeof(node_t));
-                if (!minimax) {
-                    settings->should_exit = true;
-                    continue;
-                }
-                minimax->board      = board_copy(board);
-                minimax->weight     = 0;
-                minimax->play_col   = 0;
-                minimax->play_row   = 0;
-                minimax->n_children = 0;
-                minimax->children   = NULL;
-                minimax_generate(cur_player->depth, &minimax, cur_player->color,
-                                 false);
-                minimax_draw(minimax);
+                printf("minimax: %d\n",
+                       minimax(cur_player->color, board, cur_player->depth,
+                               INT_MIN, INT_MAX, true));
             }
         }
 
