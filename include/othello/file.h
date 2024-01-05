@@ -4,4 +4,5 @@
 #include <stdio.h>
 bool file_save(const settings_t *settings, char **history,
                unsigned int history_size);
+char **file_load(settings_t *settings, unsigned int *history_size);
 #endif /* ifndef _OTHELLO_FILE_H_ */

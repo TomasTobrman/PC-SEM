@@ -1,6 +1,10 @@
 #ifndef _OTHELLO_TYPES_H_
 #define _OTHELLO_TYPES_H_
 #include <stdio.h>
+/* ==== DEFINES ============================================================= */
+#define INPUT_SIZE               0xFF
+#define HISTORY_BUFFER_INCREMENT 32
+#define HISTORY_ELEMENT_SIZE     16
 /* ==== ENUMS =============================================================== */
 typedef enum { false, true } bool;
 typedef enum { CMD_NONE, CMD_QUIT, CMD_SAVE, CMD_PASS, CMD_PLAY } command_code;

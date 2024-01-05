@@ -1,19 +1,15 @@
 #include "othello/board.h"
 #include "othello/command.h"
 #include "othello/file.h"
+#include "othello/history.h"
 #include "othello/minimax.h"
 #include "othello/settings.h"
 #include "othello/types.h"
 
 #include <i386/limits.h>
-#include <malloc/_malloc.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#define INPUT_SIZE               0xFF
-#define HISTORY_BUFFER_INCREMENT 32
-#define HISTORY_ELEMENT_SIZE     16
 
 void usage(const char *exe) {
     printf("usage: %s <options>\n\n"
@@ -79,6 +75,12 @@ int main(int argc, char *argv[]) {
         return args_status;
     }
 
+    if (settings->file_in) {
+        if (file_load(settings, &history_size)) {
+            printf("Invalid input file!\n");
+        }
+    }
+
     /* create a new board */
     board = board_create(settings->board_cols, settings->board_rows);
     if (!board) return -1;
@@ -90,8 +92,13 @@ int main(int argc, char *argv[]) {
     cur_player = settings->player_white;
 
     /* initialize history */
-    history      = (char **)malloc(sizeof(char *) * HISTORY_BUFFER_INCREMENT);
-    history_size = 0;
+    if (history) {
+
+    } else {
+        history = (char **)malloc(sizeof(char *) * HISTORY_BUFFER_INCREMENT);
+        if (!history) return -1;
+        history_size = 0;
+    }
 
     /* game loop */
     while (!settings->should_exit) {
@@ -164,7 +171,8 @@ int main(int argc, char *argv[]) {
         /* get user input */
         printf("(%s:%s) > ", cur_player->name,
                cur_player->type == PLAYER_TYPE_HUMAN ? "human" : "minimax");
-        if (settings->interactive) fgets(command, INPUT_SIZE, stdin);
+        /* if (settings->interactive) fgets(command, INPUT_SIZE, stdin); */
+        fgets(command, INPUT_SIZE, stdin);
 
         /* interpret the given command */
         switch (command_interpret(command, &play_col, &play_row)) {
