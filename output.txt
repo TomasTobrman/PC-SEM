@@ -1,0 +1,12 @@
+[pb minimax,Karel,3]
+[pw minimax,Anna]
+[size 8 8]
+[init 4 4]
+[game]
+3_4
+5_3
+6_2
+2_4
+2_3
+7_1
+1_4

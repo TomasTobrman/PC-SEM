@@ -1,14 +1,19 @@
 #include "othello/board.h"
 #include "othello/command.h"
+#include "othello/file.h"
 #include "othello/minimax.h"
 #include "othello/settings.h"
 #include "othello/types.h"
 
 #include <i386/limits.h>
+#include <malloc/_malloc.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
-#define INPUT_SIZE 0xFF
+#define INPUT_SIZE               0xFF
+#define HISTORY_BUFFER_INCREMENT 32
+#define HISTORY_ELEMENT_SIZE     16
 
 void usage(const char *exe) {
     printf("usage: %s <options>\n\n"
@@ -25,17 +30,44 @@ void usage(const char *exe) {
            exe);
 }
 
+char **history_add(char **history, unsigned int *history_size,
+                   const char *element) {
+    char **temp_hist = NULL;
+    char *str        = NULL;
+    if (!history || !element) return history;
+
+    if (!((*history_size + 1) % HISTORY_BUFFER_INCREMENT)) {
+        temp_hist = (char **)realloc(
+            history,
+            sizeof(char *) * (*history_size + HISTORY_BUFFER_INCREMENT));
+        if (!temp_hist) return history;
+        history = temp_hist;
+    }
+
+    str = (char *)malloc(sizeof(char) * HISTORY_ELEMENT_SIZE);
+    if (!str) return history;
+
+    str = strcpy(str, element);
+
+    history[*history_size] = str;
+    ++(*history_size);
+
+    return history;
+}
+
 int main(int argc, char *argv[]) {
     settings_t *settings = NULL;
     board_t *board       = NULL;
     player_t *cur_player = NULL;
+    char **history       = NULL;
     char command[INPUT_SIZE];
-    int i                    = 0;
-    int args_status          = 0;
-    unsigned int play_col    = 0;
-    unsigned int play_row    = 0;
-    int minimax_eval         = 0;
-    bool other_player_passed = false;
+    int i                     = 0;
+    int args_status           = 0;
+    unsigned int play_col     = 0;
+    unsigned int play_row     = 0;
+    int minimax_eval          = 0;
+    unsigned int history_size = 0;
+    bool other_player_passed  = false;
 
     /* set default settings */
     settings = (settings_t *)malloc(sizeof(settings_t));
@@ -54,14 +86,19 @@ int main(int argc, char *argv[]) {
     /* place initial stones */
     board_init(board, settings->init_col, settings->init_row);
 
-    /* initialize input buffer to zeros */
-    for (i = 0; i < INPUT_SIZE; ++i) command[i] = 0;
-
     /* set current player to white for black to be first */
     cur_player = settings->player_white;
 
+    /* initialize history */
+    history      = (char **)malloc(sizeof(char *) * HISTORY_BUFFER_INCREMENT);
+    history_size = 0;
+
     /* game loop */
     while (!settings->should_exit) {
+
+        /* initialize input buffer to zeros */
+        for (i = 0; i < INPUT_SIZE; ++i) command[i] = 0;
+
         if (settings->next_move) {
             /* switch players */
             cur_player = cur_player->color == PLAYER_COLOR_WHITE
@@ -97,6 +134,7 @@ int main(int argc, char *argv[]) {
                     }
                     other_player_passed = true;
                     settings->next_move = true;
+                    history = history_add(history, &history_size, "pass\n");
                     continue;
                 }
 
@@ -108,13 +146,17 @@ int main(int argc, char *argv[]) {
                     printf("Invalid move!\n");
                     break;
                 }
+
                 if (!board_play(&board, cur_player->color, play_col,
                                 play_row)) {
                     printf("Invalid move!\n");
                     break;
                 }
+
                 settings->next_move = true;
                 other_player_passed = false;
+                sprintf(command, "%d_%d\n", play_row, play_col);
+                history = history_add(history, &history_size, command);
                 continue;
             }
         }
@@ -137,13 +179,18 @@ int main(int argc, char *argv[]) {
                 }
                 settings->next_move = true;
                 other_player_passed = true;
+                history = history_add(history, &history_size, command);
                 break;
             case CMD_QUIT:
                 settings->should_exit = true;
                 break;
             case CMD_SAVE:
-                if (!settings->file_out)
+                if (!settings->file_out ||
+                    !file_save(settings, history, history_size)) {
                     printf("Invalid output file destination!\n");
+                    break;
+                }
+
                 break;
             case CMD_PLAY:
                 if (play_col <= 0 || play_col > settings->board_cols ||
@@ -158,6 +205,7 @@ int main(int argc, char *argv[]) {
                 }
                 settings->next_move = true;
                 other_player_passed = false;
+                history = history_add(history, &history_size, command);
                 break;
             default:
                 printf("Invalid move!\n");
@@ -171,6 +219,8 @@ int main(int argc, char *argv[]) {
            board_count(board, PLAYER_COLOR_WHITE));
 
     /* exit application */
+    for (i = 0; i < history_size; ++i) free(history[i]);
+    free(history);
     board_free(&board);
     settings_free(&settings);
     return 0;

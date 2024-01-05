@@ -1,14 +1,14 @@
 #ifndef _OTHELLO_TYPES_H_
 #define _OTHELLO_TYPES_H_
-#include <_stdio.h>
+#include <stdio.h>
 /* ==== ENUMS =============================================================== */
 typedef enum { false, true } bool;
 typedef enum { CMD_NONE, CMD_QUIT, CMD_SAVE, CMD_PASS, CMD_PLAY } command_code;
 typedef enum { PLAYER_TYPE_HUMAN, PLAYER_TYPE_MINIMAX } player_type;
 typedef enum {
-    PLAYER_COLOR_NONE  = 0,
-    PLAYER_COLOR_WHITE = 1,
-    PLAYER_COLOR_BLACK = 2,
+    PLAYER_COLOR_NONE,
+    PLAYER_COLOR_WHITE,
+    PLAYER_COLOR_BLACK
 } player_color;
 /* ==== STRUCTS ============================================================= */
 typedef struct {
@@ -18,14 +18,6 @@ typedef struct {
     player_color *data;
     unsigned int *moves;
 } board_t;
-typedef struct _node {
-    board_t *board;
-    unsigned int weight;
-    unsigned int play_col;
-    unsigned int play_row;
-    unsigned int n_children;
-    struct _node **children;
-} node_t;
 typedef struct {
     player_type type;
     player_color color;

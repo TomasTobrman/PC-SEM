@@ -1,15 +1,9 @@
 ---- Today -----------------------------
-[-] Minimax Algorithm
- - [X] Stone counting
- - [X] Research
- - [X] Tree
- - [ ] Simulate other player
----- Todo ------------------------------
-[ ] File Saving
 [ ] File Loading
 [ ] File Parsing
-[ ] Win Condition
+---- Todo ------------------------------
 ---- Fixes -----------------------------
+[ ] Minimax giving wrong moves
 ---- Done ------------------------------
 [X] Board Structure
 [X] Board Drawing
@@ -18,4 +12,11 @@
 [X] Move Validation
 [X] Command-line Arguments
 [X] Human-Human Gameplay
+[X] Win Condition
+[X] Minimax Algorithm
+ - [X] Stone counting
+ - [X] Research
+ - [X] Tree
+ - [X] Simulate other player
+[X] File Saving
 ----------------------------------------

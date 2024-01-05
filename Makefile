@@ -25,7 +25,7 @@ ARGS :=
 WARN := -Wall
 
 CC := gcc
-CFLAGS := -xc -std=c90 -I$(DIR_INC)
+CFLAGS := -xc -std=c90 -I$(DIR_INC) -g
 
 LD := gcc
 LDFLAGS := 

@@ -200,7 +200,7 @@ int settings_process_args(settings_t *settings, int argc, char *argv[]) {
 
             /* open output gamefile */
             settings->file_out = fopen(argv[++i], "w");
-            if (!settings->file_in) {
+            if (!settings->file_out) {
                 printf("Invalid output file destination!\n");
                 return 4;
             }
