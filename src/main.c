@@ -64,6 +64,13 @@ int main(int argc, char *argv[]) {
     int minimax_eval          = 0;
     unsigned int history_size = 0;
     bool other_player_passed  = false;
+    const char *errors[5]     = {
+        "Invalid player description!\n",
+        "Invalid board size!\n",
+        "Unable to place initial stones!\n",
+        "Invalid output file destination!\n",
+        "Invalid input file!\n",
+    };
 
     /* set default settings */
     settings = (settings_t *)malloc(sizeof(settings_t));
@@ -72,14 +79,13 @@ int main(int argc, char *argv[]) {
     /* process command-line arguments */
     if ((args_status = settings_process_args(settings, argc, argv))) {
         settings_free(&settings);
+        printf("%s", errors[args_status - 1]);
         return args_status;
     }
 
-    if (settings->file_in) {
-        if (file_load(settings, &history_size)) {
-            printf("Invalid input file!\n");
-        }
-    }
+    /* load in predefined moves */
+    history = file_load(settings, &history_size);
+    /* if (!history) return -1; */
 
     /* create a new board */
     board = board_create(settings->board_cols, settings->board_rows);

@@ -33,196 +33,114 @@ int settings_set_default(settings_t *settings) {
     return 0;
 }
 
-int settings_process_args(settings_t *settings, int argc, char *argv[]) {
-    int i          = 0;
+static int read_player(player_t *player, const char *other_name, int argc,
+                       char **argv, int *i) {
+    char *temp_str = NULL;
     int temp_int   = 0;
-    char *temp_str = 0;
+
+    if (*i + 1 >= argc) return false;
+
+    /* player type */
+    temp_str = strtok(argv[++*i], ",");
+    if (!temp_str) return false;
+
+    if (!strcmp(temp_str, "human")) player->type = PLAYER_TYPE_HUMAN;
+    else if (!strcmp(temp_str, "minimax")) player->type = PLAYER_TYPE_MINIMAX;
+    else return false;
+
+    /* player name */
+    temp_str = strtok(NULL, ",");
+    if (temp_str) {
+        if (temp_str[0] != '\0' && strcmp(temp_str, other_name))
+            player->name = temp_str;
+        else return false;
+    }
+
+    /* minimax tree depth */
+    temp_str = strtok(NULL, ",");
+    if (temp_str) {
+        temp_int = atoi(temp_str);
+        if (temp_str[0] == '\0' || temp_int < 0) return false;
+        player->depth = temp_int;
+    }
+
+    return true;
+}
+
+static bool read_two_ints(settings_t *settings, int argc, char **argv, int *i) {
+    int temp_int = 0;
+
+    if (*i + 2 >= argc) return false;
+
+    /* board rows */
+    temp_int = atoi(argv[*i + 1]);
+    if (temp_int < 2) return false;
+    settings->board_rows = temp_int;
+
+    /* board columns */
+    temp_int = atoi(argv[*i + 2]);
+    if (temp_int < 2) return false;
+    settings->board_cols = temp_int;
+
+    *i += 2;
+    return true;
+}
+
+static bool read_file(const char *method, FILE **file, int argc, char **argv,
+                      int *i) {
+    if (*i + 1 >= argc) return false;
+
+    /* open output gamefile */
+    *file = fopen(argv[++*i], method);
+    if (!*file) return false;
+
+    return true;
+}
+
+int settings_process_args(settings_t *settings, int argc, char *argv[]) {
+    int i = 0;
+
+    if (!settings || !argv) return 0;
 
     for (i = 1; i < argc; ++i) {
         /* player black */
         if (!strcmp(argv[i], "-pb")) {
-            if (i + 1 >= argc) {
-                printf("Invalid player description!\n");
+            if (!read_player(settings->player_black,
+                             settings->player_white->name, argc, argv, &i))
                 return 1;
-            }
-
-            /* player type */
-            temp_str = strtok(argv[++i], ",");
-            if (!temp_str) {
-                printf("Invalid player description!\n");
-                return 1;
-            }
-            if (!strcmp(temp_str, "human")) {
-                settings->player_black->type = PLAYER_TYPE_HUMAN;
-            } else if (!strcmp(temp_str, "minimax")) {
-                settings->player_black->type = PLAYER_TYPE_MINIMAX;
-            } else {
-                printf("Invalid player description!\n");
-                return 1;
-            }
-
-            /* player name */
-            temp_str = strtok(NULL, ",");
-            if (temp_str) {
-                if (temp_str[0] != '\0' &&
-                    strcmp(temp_str, settings->player_white->name)) {
-                    settings->player_black->name = temp_str;
-                } else {
-                    printf("Invalid player description!\n");
-                    return 1;
-                }
-            }
-
-            /* minimax tree depth */
-            temp_str = strtok(NULL, ",");
-            if (temp_str) {
-                temp_int = atoi(temp_str);
-                if (temp_str[0] == '\0' || temp_int < 0) {
-                    printf("Invalid player description!\n");
-                    return 1;
-                }
-                settings->player_black->depth = temp_int;
-            }
-
             continue;
         }
 
         /* player white */
         if (!strcmp(argv[i], "-pw")) {
-            if (i + 1 >= argc) {
-                printf("Invalid player description!\n");
+            if (!read_player(settings->player_white,
+                             settings->player_black->name, argc, argv, &i))
                 return 1;
-            }
-
-            /* player type */
-            temp_str = strtok(argv[++i], ",");
-            if (!temp_str) {
-                printf("Invalid player description!\n");
-                return 1;
-            }
-            if (!strcmp(temp_str, "human")) {
-                settings->player_white->type = PLAYER_TYPE_HUMAN;
-            } else if (!strcmp(temp_str, "minimax")) {
-                settings->player_white->type = PLAYER_TYPE_MINIMAX;
-            } else {
-                printf("Invalid player description!\n");
-                return 1;
-            }
-
-            /* player name */
-            temp_str = strtok(NULL, ",");
-            if (temp_str) {
-                if (temp_str[0] != '\0' &&
-                    strcmp(temp_str, settings->player_black->name)) {
-                    settings->player_white->name = temp_str;
-                } else {
-                    printf("Invalid player description!\n");
-                    return 1;
-                }
-            }
-
-            /* minimax tree depth */
-            temp_str = strtok(NULL, ",");
-            if (temp_str) {
-                temp_int = atoi(temp_str);
-                if (temp_str[0] == '\0' || temp_int < 0) {
-                    printf("Invalid player description!\n");
-                    return 1;
-                }
-                settings->player_white->depth = temp_int;
-            }
-
             continue;
         }
 
         /* board size */
         if (!strcmp(argv[i], "-size")) {
-            if (i + 2 >= argc) {
-                printf("Invalid board size!\n");
-                return 2;
-            }
-
-            /* board rows */
-            temp_int = atoi(argv[i + 1]);
-            if (temp_int < 2) {
-                printf("Invalid board size!\n");
-                return 2;
-            }
-            settings->board_rows = temp_int;
-
-            /* board columns */
-            temp_int = atoi(argv[i + 2]);
-            if (temp_int < 2) {
-                printf("Invalid board size!\n");
-                return 2;
-            }
-            settings->board_cols = temp_int;
-
-            i += 2;
-
+            if (!read_two_ints(settings, argc, argv, &i)) return 2;
             continue;
         }
 
         /* initial stones position */
         if (!strcmp(argv[i], "-init")) {
-            if (i + 2 >= argc) {
-                printf("Unable to place initial stones!\n");
-                return 3;
-            }
-
-            /* top left stone row */
-            temp_int = atoi(argv[i + 1]);
-            if (temp_int >= settings->board_rows || temp_int < 1) {
-                printf("Unable to place initial stones!\n");
-                return 3;
-            }
-            settings->init_row = temp_int;
-
-            /* top left stone column */
-            temp_int = atoi(argv[i + 2]);
-            if (temp_int >= settings->board_cols || temp_int < 1) {
-                printf("Unable to place initial stones!\n");
-                return 3;
-            }
-            settings->init_col = temp_int;
-
-            i += 2;
-
+            if (!read_two_ints(settings, argc, argv, &i)) return 3;
             continue;
         }
 
         /* output gamefile */
         if (!strcmp(argv[i], "-o")) {
-            if (i + 1 >= argc) {
-                printf("Invalid output file destination!\n");
-                return 4;
-            }
-
-            /* open output gamefile */
-            settings->file_out = fopen(argv[++i], "w");
-            if (!settings->file_out) {
-                printf("Invalid output file destination!\n");
-                return 4;
-            }
-
+            if (!read_file("w", &settings->file_out, argc, argv, &i)) return 4;
             continue;
         }
 
         /* input gamefile */
         if (!strcmp(argv[i], "-i")) {
-            if (i + 1 >= argc) {
-                printf("Invalid input file!\n");
-                return 5;
-            }
-
-            /* open input gamefile */
-            settings->file_in = fopen(argv[++i], "r");
-            if (!settings->file_in) {
-                printf("Invalid input file!\n");
-                return 5;
-            }
+            if (!read_file("r", &settings->file_in, argc, argv, &i)) return 5;
             settings->interactive = false;
-
             continue;
         }
     }
