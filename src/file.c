@@ -71,12 +71,18 @@ char **file_load(settings_t *settings, unsigned int *history_size) {
     while ((line = fgetln(settings->file_in, &line_len))) {
         /* TODO: read settings */
 
-        /* get just the current line from `line` */
-        temp_str = (char *)malloc(sizeof(char) * (line_len + 1));
-        memset(temp_str, 0, line_len + 1);
-        snprintf(temp_str, line_len + 1, "%s", line);
+        /* include new-line character */
+        ++line_len;
 
-        /* printf("%s", temp_str); */
+        /* initialize new `temp_str` of size `line_len` */
+        temp_str = (char *)malloc(sizeof(char) * (line_len));
+        if (!temp_str) return history;
+
+        /* get just the current line from `line` */
+        if (snprintf(temp_str, line_len, "%s", line) < 0) {
+            free(temp_str);
+            return history;
+        }
 
         /* start reading game */
         if (!strcmp(temp_str, "[game]\n")) {
@@ -90,6 +96,7 @@ char **file_load(settings_t *settings, unsigned int *history_size) {
             history = history_add(history, history_size, temp_str);
 
         free(temp_str);
+        temp_str = NULL;
     }
 
     return history;
