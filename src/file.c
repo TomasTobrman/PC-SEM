@@ -55,6 +55,7 @@ bool file_save(const settings_t *settings, char **history,
     return true;
 }
 
+/* TODO: check validity of the gamefile structure while processing */
 char **file_load(settings_t *settings, unsigned int *history_size) {
     char **history    = NULL;
     char *line        = NULL;
@@ -71,18 +72,18 @@ char **file_load(settings_t *settings, unsigned int *history_size) {
     while ((line = fgetln(settings->file_in, &line_len))) {
         /* TODO: read settings */
 
-        /* include new-line character */
-        ++line_len;
-
         /* initialize new `temp_str` of size `line_len` */
-        temp_str = (char *)malloc(sizeof(char) * (line_len));
-        if (!temp_str) return history;
+        temp_str = (char *)malloc(sizeof(char) * (line_len + 1));
+        if (!temp_str) break;
 
         /* get just the current line from `line` */
-        if (snprintf(temp_str, line_len, "%s", line) < 0) {
+        if (!(temp_str = strncpy(temp_str, line, line_len))) {
             free(temp_str);
-            return history;
+            break;
         }
+
+        /* terminate `temp_str` */
+        temp_str[line_len] = '\0';
 
         /* start reading game */
         if (!strcmp(temp_str, "[game]\n")) {
@@ -90,10 +91,34 @@ char **file_load(settings_t *settings, unsigned int *history_size) {
             continue;
         }
 
-        /* add read moves to history */
-        /* TODO: check moves before adding */
-        if (reading_game)
+        if (reading_game) {
+            /* add read moves to history */
             history = history_add(history, history_size, temp_str);
+        } else {
+            /* check for `[pb #]` tag */
+            if (strstr(temp_str, "[pb ")) {
+                printf("found -pb: %s", temp_str);
+                continue;
+            }
+
+            /* check for `[pw #]` tag */
+            if (strstr(temp_str, "[pw ")) {
+                printf("found -pw: %s", temp_str);
+                continue;
+            }
+
+            /* check for `[size # #]` tag */
+            if (strstr(temp_str, "[size ")) {
+                printf("found -size: %s", temp_str);
+                continue;
+            }
+
+            /* check for `[init # #]` tag */
+            if (strstr(temp_str, "[init ")) {
+                printf("found -init: %s", temp_str);
+                continue;
+            }
+        }
 
         free(temp_str);
         temp_str = NULL;
