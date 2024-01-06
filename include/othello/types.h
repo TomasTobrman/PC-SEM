@@ -27,6 +27,9 @@ typedef struct {
     player_color color;
     char *name;
     int depth;
+    bool name_set;
+    bool type_set;
+    bool depth_set;
 } player_t;
 typedef struct {
     player_t *player_white;
@@ -40,5 +43,8 @@ typedef struct {
     bool should_exit;
     bool next_move;
     bool interactive;
+    /* is setting set */
+    bool size_set;
+    bool init_set;
 } settings_t;
 #endif /* ifndef _OTHELLO_TYPES_H_ */

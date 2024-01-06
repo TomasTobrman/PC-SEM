@@ -62,6 +62,7 @@ char **file_load(settings_t *settings, unsigned int *history_size) {
     size_t line_len   = 0;
     bool reading_game = false;
     char *temp_str    = NULL;
+    int temp_int      = 0;
 
     if (!settings || !settings->file_in) return NULL;
 
@@ -87,14 +88,16 @@ char **file_load(settings_t *settings, unsigned int *history_size) {
 
         /* start reading game */
         if (!strcmp(temp_str, "[game]\n")) {
-            reading_game = true;
             continue;
+            reading_game = true;
         }
 
         if (reading_game) {
             /* add read moves to history */
             history = history_add(history, history_size, temp_str);
         } else {
+            /* TODO: parse values */
+
             /* check for `[pb #]` tag */
             if (strstr(temp_str, "[pb ")) {
                 printf("found -pb: %s", temp_str);
@@ -109,13 +112,37 @@ char **file_load(settings_t *settings, unsigned int *history_size) {
 
             /* check for `[size # #]` tag */
             if (strstr(temp_str, "[size ")) {
+                if (settings->size_set) continue;
+
                 printf("found -size: %s", temp_str);
+                temp_str = strtok(temp_str, " ");
+
+                /* parse number of rows */
+                temp_int = atoi(strtok(NULL, " "));
+                if (temp_int > 1) settings->board_rows = temp_int;
+
+                /* parse number of columns */
+                temp_int = atoi(strtok(NULL, "]"));
+                if (temp_int > 1) settings->board_cols = temp_int;
+
                 continue;
             }
 
             /* check for `[init # #]` tag */
             if (strstr(temp_str, "[init ")) {
+                if (settings->init_set) continue;
+
                 printf("found -init: %s", temp_str);
+                temp_str = strtok(temp_str, " ");
+
+                temp_int = atoi(strtok(NULL, " "));
+                if (temp_int > 0 && temp_int < settings->board_rows)
+                    settings->init_row = temp_int;
+
+                temp_int = atoi(strtok(NULL, "]"));
+                if (temp_int > 0 && temp_int < settings->board_cols)
+                    settings->init_col = temp_int;
+
                 continue;
             }
         }

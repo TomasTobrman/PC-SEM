@@ -2,11 +2,12 @@
 [-] File Parsing
  - [X] Add to History
  - [X] Play the loaded History
- - [ ] Set Settings
+ - [-] Set Settings
 ---- Todo ------------------------------
 [ ] Heavy Refactoring
 ---- Fixes -----------------------------
 [ ] Minimax giving wrong moves
+[ ] auto minimax on -size and -init
 ---- Done ------------------------------
 [X] Board Structure
 [X] Board Drawing
