@@ -1,7 +1,10 @@
 ---- Today -----------------------------
-[ ] File Loading
-[ ] File Parsing
+[-] File Parsing
+ - [X] Add to History
+ - [X] Play the loaded History
+ - [ ] Set Settings
 ---- Todo ------------------------------
+[ ] Heavy Refactoring
 ---- Fixes -----------------------------
 [ ] Minimax giving wrong moves
 ---- Done ------------------------------
@@ -19,4 +22,5 @@
  - [X] Tree
  - [X] Simulate other player
 [X] File Saving
+[X] File Loading
 ----------------------------------------

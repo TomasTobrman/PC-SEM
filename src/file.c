@@ -2,6 +2,7 @@
 #include "othello/history.h"
 #include "othello/types.h"
 
+#include <malloc/_malloc.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -18,7 +19,7 @@ bool file_save(const settings_t *settings, char **history,
                     settings->player_black->depth) < 0)
             return false;
     } else {
-        if (fprintf(settings->file_out, "[pb minimax,%s]\n",
+        if (fprintf(settings->file_out, "[pb human,%s]\n",
                     settings->player_black->name) < 0)
             return false;
     }
@@ -30,7 +31,7 @@ bool file_save(const settings_t *settings, char **history,
                     settings->player_white->depth) < 0)
             return false;
     } else {
-        if (fprintf(settings->file_out, "[pw minimax,%s]\n",
+        if (fprintf(settings->file_out, "[pw human,%s]\n",
                     settings->player_white->name) < 0)
             return false;
     }
@@ -59,25 +60,36 @@ char **file_load(settings_t *settings, unsigned int *history_size) {
     char *line        = NULL;
     size_t line_len   = 0;
     bool reading_game = false;
+    char *temp_str    = NULL;
 
     if (!settings || !settings->file_in) return NULL;
 
     history = (char **)malloc(sizeof(char *) * HISTORY_BUFFER_INCREMENT);
     if (!history) return NULL;
-    history_size = 0;
+    *history_size = 0;
 
     while ((line = fgetln(settings->file_in, &line_len))) {
         /* TODO: read settings */
 
+        /* get just the current line from `line` */
+        temp_str = (char *)malloc(sizeof(char) * (line_len + 1));
+        memset(temp_str, 0, line_len + 1);
+        snprintf(temp_str, line_len + 1, "%s", line);
+
+        /* printf("%s", temp_str); */
+
         /* start reading game */
-        if (!strcmp(line, "[game]")) {
+        if (!strcmp(temp_str, "[game]\n")) {
             reading_game = true;
             continue;
         }
 
         /* add read moves to history */
         /* TODO: check moves before adding */
-        if (reading_game) history = history_add(history, history_size, line);
+        if (reading_game)
+            history = history_add(history, history_size, temp_str);
+
+        free(temp_str);
     }
 
     return history;

@@ -85,7 +85,6 @@ int main(int argc, char *argv[]) {
 
     /* load in predefined moves */
     history = file_load(settings, &history_size);
-    /* if (!history) return -1; */
 
     /* create a new board */
     board = board_create(settings->board_cols, settings->board_rows);
@@ -97,10 +96,39 @@ int main(int argc, char *argv[]) {
     /* set current player to white for black to be first */
     cur_player = settings->player_white;
 
-    /* initialize history */
+    /* if history was loaded from a file */
     if (history) {
+        /* play all moves in history */
+        for (i = 0; i < history_size; ++i) {
+            /* switch players */
+            cur_player = cur_player->color == PLAYER_COLOR_WHITE
+                           ? settings->player_black
+                           : settings->player_white;
 
+            /* redraw board */
+            board_draw(board);
+
+            /* print command from history */
+            printf("(%s:%s) > %s", cur_player->name,
+                   cur_player->type == PLAYER_TYPE_HUMAN ? "human" : "minimax",
+                   history[i]);
+
+            /* interpret the command */
+            switch (command_interpret(history[i], &play_col, &play_row)) {
+                case CMD_PASS:
+                    /* pass current round */
+                    continue;
+                case CMD_PLAY:
+                    /* play command from history */
+                    board_calculate(&board, cur_player->color);
+                    board_play(&board, cur_player->color, play_col, play_row);
+                    break;
+                default:
+                    continue;
+            }
+        }
     } else {
+        /* initialize new history */
         history = (char **)malloc(sizeof(char *) * HISTORY_BUFFER_INCREMENT);
         if (!history) return -1;
         history_size = 0;
@@ -110,8 +138,9 @@ int main(int argc, char *argv[]) {
     while (!settings->should_exit) {
 
         /* initialize input buffer to zeros */
-        for (i = 0; i < INPUT_SIZE; ++i) command[i] = 0;
+        memset(command, 0, INPUT_SIZE);
 
+        /* process next move */
         if (settings->next_move) {
             /* switch players */
             cur_player = cur_player->color == PLAYER_COLOR_WHITE
