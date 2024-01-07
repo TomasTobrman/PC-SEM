@@ -1,13 +1,10 @@
 ---- Today -----------------------------
-[-] File Parsing
- - [X] Add to History
- - [X] Play the loaded History
- - [-] Set Settings
 ---- Todo ------------------------------
 [ ] Heavy Refactoring
 ---- Fixes -----------------------------
 [ ] Minimax giving wrong moves
 [ ] auto minimax on -size and -init
+[ ] input gamefile structure check
 ---- Done ------------------------------
 [X] Board Structure
 [X] Board Drawing
@@ -24,4 +21,8 @@
  - [X] Simulate other player
 [X] File Saving
 [X] File Loading
+[X] File Parsing
+ - [X] Add to History
+ - [X] Play the loaded History
+ - [X] Set Settings
 ----------------------------------------

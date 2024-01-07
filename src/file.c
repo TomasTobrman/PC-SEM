@@ -55,100 +55,117 @@ bool file_save(const settings_t *settings, char **history,
     return true;
 }
 
+static void parse_player(player_t *player, char *line) {
+    /* get the data part */
+    line = strtok(line, " ");
+    line = strtok(NULL, "]");
+
+    /* player type */
+    line = strtok(line, ",");
+    if (line && !player->type_set)
+        player->type =
+            !strcmp(line, "minimax") ? PLAYER_TYPE_MINIMAX : PLAYER_TYPE_HUMAN;
+
+    /* player name */
+    line = strtok(NULL, ",");
+    if (line && !player->name_set) strcpy(player->name, line);
+
+    /* player depth */
+    line = strtok(NULL, ",");
+    if (line && !player->depth_set) player->depth = atoi(line);
+}
+
+static void parse_file(settings_t *settings, char *line) {
+    int temp_int = 0;
+
+    /* check for `[pb #]` tag */
+    if (strstr(line, "[pb ")) {
+        parse_player(settings->player_black, line);
+        return;
+    }
+
+    /* check for `[pw #]` tag */
+    if (strstr(line, "[pw ")) {
+        parse_player(settings->player_white, line);
+        return;
+    }
+
+    /* check for `[size # #]` tag */
+    if (strstr(line, "[size ")) {
+        if (settings->size_set) return;
+
+        line = strtok(line, " ");
+
+        /* parse number of rows */
+        temp_int = atoi(strtok(NULL, " "));
+        if (temp_int > 1) settings->board_rows = temp_int;
+
+        /* parse number of columns */
+        temp_int = atoi(strtok(NULL, "]"));
+        if (temp_int > 1) settings->board_cols = temp_int;
+
+        return;
+    }
+
+    /* check for `[init # #]` tag */
+    if (strstr(line, "[init ")) {
+        if (settings->init_set) return;
+
+        line = strtok(line, " ");
+
+        temp_int = atoi(strtok(NULL, " "));
+        if (temp_int > 0 && temp_int < settings->board_rows)
+            settings->init_row = temp_int;
+
+        temp_int = atoi(strtok(NULL, "]"));
+        if (temp_int > 0 && temp_int < settings->board_cols)
+            settings->init_col = temp_int;
+
+        return;
+    }
+}
+
 /* TODO: check validity of the gamefile structure while processing */
-char **file_load(settings_t *settings, unsigned int *history_size) {
-    char **history    = NULL;
-    char *line        = NULL;
-    size_t line_len   = 0;
-    bool reading_game = false;
-    char *temp_str    = NULL;
-    int temp_int      = 0;
+char **file_load(settings_t *settings, unsigned int *hist_len) {
+    char **history  = NULL;
+    char *input     = NULL;
+    char *line      = NULL;
+    size_t line_len = 0;
+    bool read_game  = false;
 
     if (!settings || !settings->file_in) return NULL;
 
     history = (char **)malloc(sizeof(char *) * HISTORY_BUFFER_INCREMENT);
     if (!history) return NULL;
-    *history_size = 0;
+    *hist_len = 0;
 
-    while ((line = fgetln(settings->file_in, &line_len))) {
+    while ((input = fgetln(settings->file_in, &line_len))) {
         /* TODO: read settings */
 
         /* initialize new `temp_str` of size `line_len` */
-        temp_str = (char *)malloc(sizeof(char) * (line_len + 1));
-        if (!temp_str) break;
+        line = (char *)malloc(sizeof(char) * (line_len + 1));
+        if (!line) break;
 
         /* get just the current line from `line` */
-        if (!(temp_str = strncpy(temp_str, line, line_len))) {
-            free(temp_str);
+        if (!(line = strncpy(line, input, line_len))) {
+            free(line);
             break;
         }
 
         /* terminate `temp_str` */
-        temp_str[line_len] = '\0';
+        line[line_len] = '\0';
 
         /* start reading game */
-        if (!strcmp(temp_str, "[game]\n")) {
+        if (!strcmp(line, "[game]\n")) {
+            read_game = true;
             continue;
-            reading_game = true;
         }
 
-        if (reading_game) {
-            /* add read moves to history */
-            history = history_add(history, history_size, temp_str);
-        } else {
-            /* TODO: parse values */
+        if (read_game) history_add(history, hist_len, line);
+        else parse_file(settings, line);
 
-            /* check for `[pb #]` tag */
-            if (strstr(temp_str, "[pb ")) {
-                printf("found -pb: %s", temp_str);
-                continue;
-            }
-
-            /* check for `[pw #]` tag */
-            if (strstr(temp_str, "[pw ")) {
-                printf("found -pw: %s", temp_str);
-                continue;
-            }
-
-            /* check for `[size # #]` tag */
-            if (strstr(temp_str, "[size ")) {
-                if (settings->size_set) continue;
-
-                printf("found -size: %s", temp_str);
-                temp_str = strtok(temp_str, " ");
-
-                /* parse number of rows */
-                temp_int = atoi(strtok(NULL, " "));
-                if (temp_int > 1) settings->board_rows = temp_int;
-
-                /* parse number of columns */
-                temp_int = atoi(strtok(NULL, "]"));
-                if (temp_int > 1) settings->board_cols = temp_int;
-
-                continue;
-            }
-
-            /* check for `[init # #]` tag */
-            if (strstr(temp_str, "[init ")) {
-                if (settings->init_set) continue;
-
-                printf("found -init: %s", temp_str);
-                temp_str = strtok(temp_str, " ");
-
-                temp_int = atoi(strtok(NULL, " "));
-                if (temp_int > 0 && temp_int < settings->board_rows)
-                    settings->init_row = temp_int;
-
-                temp_int = atoi(strtok(NULL, "]"));
-                if (temp_int > 0 && temp_int < settings->board_cols)
-                    settings->init_col = temp_int;
-
-                continue;
-            }
-        }
-
-        free(temp_str);
-        temp_str = NULL;
+        free(line);
+        line = NULL;
     }
 
     return history;

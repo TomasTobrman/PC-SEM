@@ -25,7 +25,7 @@ typedef struct {
 typedef struct {
     player_type type;
     player_color color;
-    char *name;
+    char name[INPUT_SIZE];
     int depth;
     bool name_set;
     bool type_set;

@@ -10,7 +10,11 @@ int settings_set_default(settings_t *settings) {
     if (!settings->player_black) return 1;
     settings->player_black->type      = PLAYER_TYPE_HUMAN;
     settings->player_black->color     = PLAYER_COLOR_BLACK;
-    settings->player_black->name      = "Karel";
+    settings->player_black->name[0]   = 'K';
+    settings->player_black->name[1]   = 'a';
+    settings->player_black->name[2]   = 'r';
+    settings->player_black->name[3]   = 'e';
+    settings->player_black->name[4]   = 'l';
     settings->player_black->depth     = 3;
     settings->player_black->name_set  = false;
     settings->player_black->type_set  = false;
@@ -20,7 +24,10 @@ int settings_set_default(settings_t *settings) {
     if (!settings->player_white) return 2;
     settings->player_white->type      = PLAYER_TYPE_HUMAN;
     settings->player_white->color     = PLAYER_COLOR_WHITE;
-    settings->player_white->name      = "Anna";
+    settings->player_white->name[0]   = 'A';
+    settings->player_white->name[1]   = 'n';
+    settings->player_white->name[2]   = 'n';
+    settings->player_white->name[3]   = 'a';
     settings->player_white->depth     = 3;
     settings->player_white->name_set  = false;
     settings->player_white->type_set  = false;
@@ -65,7 +72,7 @@ static int read_player(player_t *player, const char *other_name, int argc,
     temp_str = strtok(NULL, ",");
     if (temp_str) {
         if (temp_str[0] != '\0' && strcmp(temp_str, other_name)) {
-            player->name     = temp_str;
+            strcpy(player->name, temp_str);
             player->name_set = true;
         } else return false;
     }
