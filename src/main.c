@@ -26,6 +26,30 @@ void usage(const char *exe) {
            exe);
 }
 
+static bool game_over(board_t *board) {
+    bool black_can_play = true;
+    bool white_can_play = true;
+
+    /* game over if board does not exist */
+    if (!board) return true;
+
+    /* game over if board is full */
+    if (board_full(board)) return true;
+
+    /* can black player play */
+    board_calculate(&board, PLAYER_COLOR_BLACK);
+    black_can_play = board_can_play(board);
+
+    /* can white player play */
+    board_calculate(&board, PLAYER_COLOR_WHITE);
+    white_can_play = board_can_play(board);
+
+    /* game over if both players cannot play */
+    if (!white_can_play && !black_can_play) return true;
+
+    return false;
+}
+
 char **history_add(char **history, unsigned int *history_size,
                    const char *element) {
     char **temp_hist = NULL;
@@ -61,7 +85,6 @@ int main(int argc, char *argv[]) {
     int args_status           = 0;
     unsigned int play_col     = 0;
     unsigned int play_row     = 0;
-    int minimax_eval          = 0;
     unsigned int history_size = 0;
     bool other_player_passed  = false;
     const char *errors[5]     = {
@@ -142,6 +165,9 @@ int main(int argc, char *argv[]) {
 
         /* process next move */
         if (settings->next_move) {
+            /* is game over */
+            if (game_over(board)) break;
+
             /* switch players */
             cur_player = cur_player->color == PLAYER_COLOR_WHITE
                            ? settings->player_black
@@ -164,9 +190,8 @@ int main(int argc, char *argv[]) {
             play_col = 0;
             play_row = 0;
             if (cur_player->type == PLAYER_TYPE_MINIMAX) {
-                minimax_eval =
-                    minimax(cur_player->color, board, cur_player->depth,
-                            INT_MIN, INT_MAX, true, &play_col, &play_row);
+                minimax(cur_player->color, board, cur_player->depth, INT_MIN,
+                        INT_MAX, true, &play_col, &play_row);
 
                 if (play_col == 0 && play_row == 0) {
                     printf("(%s:%s) > pass\n", cur_player->name, "minimax");
@@ -260,6 +285,9 @@ int main(int argc, char *argv[]) {
            settings->player_black->name, board_count(board, PLAYER_COLOR_BLACK),
            settings->player_white->name,
            board_count(board, PLAYER_COLOR_WHITE));
+
+    /* save game */
+    if (settings->file_out) file_save(settings, history, history_size);
 
     /* exit application */
     for (i = 0; i < history_size; ++i) free(history[i]);
