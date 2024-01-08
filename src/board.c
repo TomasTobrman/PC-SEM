@@ -5,8 +5,8 @@
 #include <stdlib.h>
 
 #define STONE_NONE  "·"
-#define STONE_WHITE "◙"
 #define STONE_BLACK "○"
+#define STONE_WHITE "◙"
 
 board_t *board_copy(const board_t *original) {
     board_t *board = NULL;
@@ -243,17 +243,6 @@ int board_count(const board_t *board, player_color color) {
         return 0;
     for (i = 0; i < board->size; ++i) sum += board->data[i] == color ? 1 : 0;
     return sum;
-}
-
-int board_eval(const board_t *board) {
-    int i    = 0;
-    int eval = 0;
-    if (!board) return 0;
-    for (i = 0; i < board->size; ++i) {
-        if (board->data[i] == PLAYER_COLOR_NONE) continue;
-        eval += board->data[i] == PLAYER_COLOR_WHITE ? 1 : -1;
-    }
-    return eval;
 }
 
 bool board_full(const board_t *board) {

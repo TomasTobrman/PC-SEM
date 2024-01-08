@@ -6,12 +6,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int minimax(player_color color, const board_t *board, int depth, int alpha,
-            int beta, bool maximizing, unsigned int *play_col,
-            unsigned int *play_row) {
+int minimax(player_color color, board_t *board, int depth, int alpha, int beta,
+            bool maximizing, unsigned int *play_col, unsigned int *play_row) {
     int eval         = 0;
-    int max_eval     = 0;
-    int min_eval     = 0;
+    int ret_eval     = 0;
     int i            = 0;
     unsigned int col = 0;
     unsigned int row = 0;
@@ -19,13 +17,21 @@ int minimax(player_color color, const board_t *board, int depth, int alpha,
     player_color other_color =
         color == PLAYER_COLOR_WHITE ? PLAYER_COLOR_BLACK : PLAYER_COLOR_WHITE;
 
-    if (depth <= 0 || !board_can_play(board)) {
-        if (color < 0) return -board_eval(board);
-        return board_eval(board);
-    }
+    /* static evaluation */
+    if (depth <= 0) {
+        for (i = 0; i < board->size; ++i) {
+            if (board->moves[i]) {
+                if (play_col) *play_col = (i % board->width) + 1;
+                if (play_row) *play_row = (i / board->width) + 1;
+                break;
+            }
+        }
+        eval = board_count(board, color) - board_count(board, other_color);
+        return eval;
+    };
 
-    if (maximizing) {
-        max_eval = INT_MIN;
+    if (maximizing) { /* calculate evaluation for maximizing player */
+        ret_eval = INT_MIN;
         for (i = 0; i < board->size; ++i) {
             if (!board->moves[i]) continue;
 
@@ -34,13 +40,13 @@ int minimax(player_color color, const board_t *board, int depth, int alpha,
             row  = (i / copy->width) + 1;
 
             board_calculate(&copy, color);
-            board_play(&copy, color, col, row);
+            if (board_can_play(board)) board_play(&copy, color, col, row);
             board_calculate(&copy, other_color);
             eval = minimax(color, copy, depth - 1, alpha, beta, false, 0, 0);
             board_free(&copy);
 
-            if (eval > max_eval) {
-                max_eval = eval;
+            if (eval > ret_eval) {
+                ret_eval = eval;
                 if (play_col) *play_col = col;
                 if (play_row) *play_row = row;
             }
@@ -48,9 +54,8 @@ int minimax(player_color color, const board_t *board, int depth, int alpha,
             alpha = alpha > eval ? alpha : eval;
             if (beta <= alpha) break;
         }
-        return max_eval;
-    } else {
-        min_eval = INT_MAX;
+    } else { /* calculate evaluation for minimazing player */
+        ret_eval = INT_MAX;
         for (i = 0; i < board->size; ++i) {
             if (!board->moves[i]) continue;
 
@@ -59,13 +64,13 @@ int minimax(player_color color, const board_t *board, int depth, int alpha,
             row  = (i / copy->width) + 1;
 
             board_calculate(&copy, other_color);
-            board_play(&copy, other_color, col, row);
+            if (board_can_play(board)) board_play(&copy, other_color, col, row);
             board_calculate(&copy, color);
             eval = minimax(color, copy, depth - 1, alpha, beta, true, 0, 0);
             board_free(&copy);
 
-            if (eval < min_eval) {
-                min_eval = eval;
+            if (eval < ret_eval) {
+                ret_eval = eval;
                 if (play_col) *play_col = col;
                 if (play_row) *play_row = row;
             }
@@ -73,8 +78,7 @@ int minimax(player_color color, const board_t *board, int depth, int alpha,
             beta = beta < eval ? beta : eval;
             if (beta <= alpha) break;
         }
-        return min_eval;
     }
 
-    return 0;
+    return ret_eval;
 }

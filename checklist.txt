@@ -2,7 +2,6 @@
 ---- Todo ------------------------------
 [ ] Heavy Refactoring
 ---- Fixes -----------------------------
-[ ] Minimax giving wrong moves
 [ ] input gamefile structure check
 ---- Done ------------------------------
 [X] Board Structure
@@ -25,4 +24,5 @@
  - [X] Play the loaded History
  - [X] Set Settings
 [F] auto minimax on -size and -init
+[F] Minimax giving wrong moves
 ----------------------------------------
