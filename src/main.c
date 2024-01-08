@@ -11,22 +11,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-void usage(const char *exe) {
-    printf("usage: %s <options>\n\n"
-           "options:\n"
-           "  -pb <desc>        description of the black player, "
-           "\"<human/minimax>[,name][,d]\"\n"
-           "      name          unique name of the player\n"
-           "      d             tree depth for the minimax algorithm\n"
-           "  -pw <desc>        description of the white player, same as -pb\n"
-           "  -size <r> <c>     size of the playing board\n"
-           "  -init <ir> <ic>   position of the initial stones on the board\n"
-           "  -o <gamefile>     output gamefile\n"
-           "  -i <gamefile>     input gamefile\n",
-           exe);
-}
-
-static bool game_over(board_t *board) {
+/**
+ * Check if the game is over
+ *
+ * @param const board_t * board Board structure with game data
+ * @return Returns true if the game is over, else returns false
+ */
+static bool game_over(const board_t *board) {
     bool black_can_play = true;
     bool white_can_play = true;
 
@@ -34,14 +25,14 @@ static bool game_over(board_t *board) {
     if (!board) return true;
 
     /* game over if board is full */
-    if (board_full(board)) return true;
+    if (board_is_full(board)) return true;
 
     /* can black player play */
-    board_calculate(&board, PLAYER_COLOR_BLACK);
+    board_calculate(board, PLAYER_COLOR_BLACK);
     black_can_play = board_can_play(board);
 
     /* can white player play */
-    board_calculate(&board, PLAYER_COLOR_WHITE);
+    board_calculate(board, PLAYER_COLOR_WHITE);
     white_can_play = board_can_play(board);
 
     /* game over if both players cannot play */
@@ -50,6 +41,77 @@ static bool game_over(board_t *board) {
     return false;
 }
 
+/**
+ * Plays moves from a history in an input gamefile, else allocates new history
+ *
+ * @param char *** history Address of the history array
+ * @param unsigned int * history_size Size of the history array
+ * @param const settings_t * settings Settings structure pointer
+ * @param board_t * board Board structure pointer with game data
+ * @param player_t ** cur_player Address of the current player
+ * @return bool Returns false if and error occured, else returns true
+ */
+static bool play_history(char ***history, unsigned int *history_size,
+                         const settings_t *settings, board_t *board,
+                         player_t **cur_player) {
+    unsigned int i        = 0;
+    unsigned int play_col = 0;
+    unsigned int play_row = 0;
+
+    if (!history || !history_size || !settings || !board || !cur_player ||
+        !*cur_player)
+        return false;
+
+    /* if history was loaded from a file */
+    if (*history) {
+        /* play all moves in history */
+        for (i = 0; i < *history_size; ++i) {
+            /* switch players */
+            *cur_player = (*cur_player)->color == PLAYER_COLOR_WHITE
+                            ? settings->player_black
+                            : settings->player_white;
+
+            /* redraw board */
+            board_draw(board);
+
+            /* print command from history */
+            printf("(%s:%s) > %s", (*cur_player)->name,
+                   (*cur_player)->type == PLAYER_TYPE_HUMAN ? "human"
+                                                            : "minimax",
+                   (*history)[i]);
+
+            /* interpret the command */
+            switch (command_interpret((*history)[i], &play_col, &play_row)) {
+                case CMD_PASS:
+                    /* pass current round */
+                    continue;
+                case CMD_PLAY:
+                    /* play command from history */
+                    board_calculate(board, (*cur_player)->color);
+                    board_play(board, (*cur_player)->color, play_col, play_row);
+                    break;
+                default:
+                    continue;
+            }
+        }
+    } else {
+        /* initialize new history */
+        *history = (char **)malloc(sizeof(char *) * HISTORY_BUFFER_INCREMENT);
+        if (!history) return false;
+        *history_size = 0;
+    }
+
+    return true;
+}
+
+/**
+ * Add an element to a history
+ *
+ * @param char ** history History array
+ * @param unsigned int * history_size Size of the history array
+ * @param const char * element String element to add into history
+ * @param char ** Returns history
+ */
 char **history_add(char **history, unsigned int *history_size,
                    const char *element) {
     char **temp_hist = NULL;
@@ -75,7 +137,14 @@ char **history_add(char **history, unsigned int *history_size,
     return history;
 }
 
-int main(int argc, char *argv[]) {
+/**
+ * Application entry point and main function of the program
+ *
+ * @param int argc Number of command-line arguments
+ * @param char ** argv Values of command-line arguments
+ * @return int Returns an exit code
+ */
+int main(int argc, char **argv) {
     settings_t *settings = NULL;
     board_t *board       = NULL;
     player_t *cur_player = NULL;
@@ -97,7 +166,11 @@ int main(int argc, char *argv[]) {
 
     /* set default settings */
     settings = (settings_t *)malloc(sizeof(settings_t));
-    settings_set_default(settings);
+    if (!settings_set_default(settings)) {
+        settings_free(&settings);
+        printf("something went wrong...\n");
+        return -1;
+    }
 
     /* process command-line arguments */
     if ((args_status = settings_process_args(settings, argc, argv))) {
@@ -111,50 +184,34 @@ int main(int argc, char *argv[]) {
 
     /* create a new board */
     board = board_create(settings->board_cols, settings->board_rows);
-    if (!board) return -1;
+    if (!board) {
+        for (i = 0; i < history_size; ++i) free(history[i]);
+        free(history);
+        settings_free(&settings);
+        printf("something went wrong...\n");
+        return -1;
+    }
 
     /* place initial stones */
-    board_init(board, settings->init_col, settings->init_row);
+    if (!board_init(board, settings->init_col, settings->init_row)) {
+        for (i = 0; i < history_size; ++i) free(history[i]);
+        free(history);
+        board_free(&board);
+        settings_free(&settings);
+        printf("%s", errors[2]);
+        return 3;
+    }
 
     /* set current player to white for black to be first */
     cur_player = settings->player_white;
 
-    /* if history was loaded from a file */
-    if (history) {
-        /* play all moves in history */
-        for (i = 0; i < history_size; ++i) {
-            /* switch players */
-            cur_player = cur_player->color == PLAYER_COLOR_WHITE
-                           ? settings->player_black
-                           : settings->player_white;
-
-            /* redraw board */
-            board_draw(board);
-
-            /* print command from history */
-            printf("(%s:%s) > %s", cur_player->name,
-                   cur_player->type == PLAYER_TYPE_HUMAN ? "human" : "minimax",
-                   history[i]);
-
-            /* interpret the command */
-            switch (command_interpret(history[i], &play_col, &play_row)) {
-                case CMD_PASS:
-                    /* pass current round */
-                    continue;
-                case CMD_PLAY:
-                    /* play command from history */
-                    board_calculate(&board, cur_player->color);
-                    board_play(&board, cur_player->color, play_col, play_row);
-                    break;
-                default:
-                    continue;
-            }
-        }
-    } else {
-        /* initialize new history */
-        history = (char **)malloc(sizeof(char *) * HISTORY_BUFFER_INCREMENT);
-        if (!history) return -1;
-        history_size = 0;
+    if (!play_history(&history, &history_size, settings, board, &cur_player)) {
+        for (i = 0; i < history_size; ++i) free(history[i]);
+        free(history);
+        board_free(&board);
+        settings_free(&settings);
+        printf("something went wrong...\n");
+        return -1;
     }
 
     /* game loop */
@@ -174,11 +231,11 @@ int main(int argc, char *argv[]) {
                            : settings->player_white;
 
             /* calculate possible moves */
-            board_calculate(&board, cur_player->color);
+            board_calculate(board, cur_player->color);
             /* redraw the board */
             board_draw(board);
 
-            if (board_full(board)) {
+            if (board_is_full(board)) {
                 settings->should_exit = true;
                 break;
             }
@@ -214,8 +271,7 @@ int main(int argc, char *argv[]) {
                     break;
                 }
 
-                if (!board_play(&board, cur_player->color, play_col,
-                                play_row)) {
+                if (!board_play(board, cur_player->color, play_col, play_row)) {
                     printf("Invalid move!\n");
                     break;
                 }
@@ -266,8 +322,7 @@ int main(int argc, char *argv[]) {
                     printf("Invalid move!\n");
                     break;
                 }
-                if (!board_play(&board, cur_player->color, play_col,
-                                play_row)) {
+                if (!board_play(board, cur_player->color, play_col, play_row)) {
                     printf("Invalid move!\n");
                     break;
                 }

@@ -5,7 +5,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-int settings_set_default(settings_t *settings) {
+/**
+ * Set default values to all settings
+ *
+ * @param settings_t * settings Settings structure pointer
+ * @return bool Returns true if successful, else false
+ */
+bool settings_set_default(settings_t *settings) {
     settings->player_black = (player_t *)malloc(sizeof(player_t));
     if (!settings->player_black) return 1;
     settings->player_black->type      = PLAYER_TYPE_HUMAN;
@@ -41,7 +47,6 @@ int settings_set_default(settings_t *settings) {
     settings->file_in     = NULL;
     settings->should_exit = false;
     settings->next_move   = true;
-    settings->interactive = true;
 
     settings->size_set = false;
     settings->init_set = false;
@@ -49,8 +54,18 @@ int settings_set_default(settings_t *settings) {
     return 0;
 }
 
-static int read_player(player_t *player, const char *other_name, int argc,
-                       char **argv, int *i) {
+/**
+ * Read the player informations from command-line arguments
+ *
+ * @param player_t * player Player structure pointer to save read data into
+ * @param const char * other_name Name of the other player for duplicity check
+ * @param int argc Number of command-line arguments
+ * @param char ** argv Values of command-line arguments
+ * @param int * i Current index in the command-line arguments array
+ * @return bool Returns true if the player was successfully read, else false
+ */
+static bool read_player(player_t *player, const char *other_name, int argc,
+                        char **argv, int *i) {
     char *temp_str = NULL;
     int temp_int   = 0;
 
@@ -89,6 +104,15 @@ static int read_player(player_t *player, const char *other_name, int argc,
     return true;
 }
 
+/**
+ * Read the board size from command-line arguments
+ *
+ * @param settigns_t * settings Settings structure to save read data into
+ * @param int argc Number of command-line arguments
+ * @param char ** argv Values of command-line arguments
+ * @param int * i Current index in the command-line arguments array
+ * @return bool Returns true if the player was successfully read, else false
+ */
 static bool read_size(settings_t *settings, int argc, char **argv, int *i) {
     int temp_int = 0;
 
@@ -108,6 +132,15 @@ static bool read_size(settings_t *settings, int argc, char **argv, int *i) {
     return true;
 }
 
+/**
+ * Read the initial stone placement from command-line arguments
+ *
+ * @param settigns_t * settings Settings structure to save read data into
+ * @param int argc Number of command-line arguments
+ * @param char ** argv Values of command-line arguments
+ * @param int * i Current index in the command-line arguments array
+ * @return bool Returns true if the player was successfully read, else false
+ */
 static bool read_init(settings_t *settings, int argc, char **argv, int *i) {
     int temp_int = 0;
 
@@ -127,6 +160,16 @@ static bool read_init(settings_t *settings, int argc, char **argv, int *i) {
     return true;
 }
 
+/**
+ * Read a file path from command-line arguments
+ *
+ * @param const char * method File open method
+ * @param FILE ** file Address of a FILE pointer to save the opened file into
+ * @param int argc Number of command-line arguments
+ * @param char ** argv Values of command-line arguments
+ * @param int * i Current index in the command-line arguments array
+ * @return bool Returns true if the player was successfully read, else false
+ */
 static bool read_file(const char *method, FILE **file, int argc, char **argv,
                       int *i) {
     if (*i + 1 >= argc) return false;
@@ -138,7 +181,15 @@ static bool read_file(const char *method, FILE **file, int argc, char **argv,
     return true;
 }
 
-int settings_process_args(settings_t *settings, int argc, char *argv[]) {
+/**
+ * Process and assing values from command-line arguments
+ *
+ * @param settigns_t * settings Settings structure to save read data into
+ * @param int argc Number of command-line arguments
+ * @param char ** argv Values of command-line arguments
+ * @return int Returns 0 when successfully parsed, else returns error code
+ */
+int settings_process_args(settings_t *settings, int argc, char **argv) {
     int i = 0;
 
     if (!settings || !argv) return 0;
@@ -183,7 +234,6 @@ int settings_process_args(settings_t *settings, int argc, char *argv[]) {
         /* input gamefile */
         if (!strcmp(argv[i], "-i")) {
             if (!read_file("r", &settings->file_in, argc, argv, &i)) return 5;
-            settings->interactive = false;
             continue;
         }
     }
@@ -191,6 +241,11 @@ int settings_process_args(settings_t *settings, int argc, char *argv[]) {
     return 0;
 }
 
+/**
+ * Free the settigns_t structure
+ *
+ * @param settings_t ** settings Address of the settings_t structure pointer
+ */
 void settings_free(settings_t **settings) {
     if (!settings || !*settings) return;
     if ((*settings)->file_out) fclose((*settings)->file_out);

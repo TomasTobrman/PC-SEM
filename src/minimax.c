@@ -6,6 +6,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+/**
+ * Minimax algorithm with Alpha-Beta purging
+ *
+ * @param player_color color Player for which to calculate Minimax
+ * @param board_t * board Board structure pointer with game data
+ * @param int depth Max depth of the minimax algorithm
+ * @param int alpha Alpha value of the Alpha-Beta pruning extension
+ * @param int beta Beta value of the Alpha-Beta pruning extension
+ * @param bool maximizing Is the calculated player the maximizing player
+ * @param unsigned int * play_col Returned column of the best played move
+ * @param unsigned int * play_row Returned row of the best played move
+ * @return int Minimax evaluation
+ */
 int minimax(player_color color, board_t *board, int depth, int alpha, int beta,
             bool maximizing, unsigned int *play_col, unsigned int *play_row) {
     int eval         = 0;
@@ -39,9 +52,9 @@ int minimax(player_color color, board_t *board, int depth, int alpha, int beta,
             col  = (i % copy->width) + 1;
             row  = (i / copy->width) + 1;
 
-            board_calculate(&copy, color);
-            if (board_can_play(board)) board_play(&copy, color, col, row);
-            board_calculate(&copy, other_color);
+            board_calculate(copy, color);
+            if (board_can_play(board)) board_play(copy, color, col, row);
+            board_calculate(copy, other_color);
             eval = minimax(color, copy, depth - 1, alpha, beta, false, 0, 0);
             board_free(&copy);
 
@@ -63,9 +76,9 @@ int minimax(player_color color, board_t *board, int depth, int alpha, int beta,
             col  = (i % copy->width) + 1;
             row  = (i / copy->width) + 1;
 
-            board_calculate(&copy, other_color);
-            if (board_can_play(board)) board_play(&copy, other_color, col, row);
-            board_calculate(&copy, color);
+            board_calculate(copy, other_color);
+            if (board_can_play(board)) board_play(copy, other_color, col, row);
+            board_calculate(copy, color);
             eval = minimax(color, copy, depth - 1, alpha, beta, true, 0, 0);
             board_free(&copy);
 

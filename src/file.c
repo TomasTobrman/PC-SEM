@@ -7,6 +7,14 @@
 #include <stdlib.h>
 #include <string.h>
 
+/**
+ * Save game settings and history to an output gamefile
+ *
+ * @param const settings_t * settings Game settings structure pointer
+ * @param char ** history Game history of moves
+ * @param unsigned int history_size Size of the history array
+ * @return bool Returns true if the saving was successful, else returns false
+ */
 bool file_save(const settings_t *settings, char **history,
                unsigned int history_size) {
     unsigned int i = 0;
@@ -55,6 +63,12 @@ bool file_save(const settings_t *settings, char **history,
     return true;
 }
 
+/**
+ * Parse player information from a line
+ *
+ * @param player_t * player Player structure into which to save parsed data
+ * @param char * line Input line string to parse
+ */
 static void parse_player(player_t *player, char *line) {
     /* get the data part */
     line = strtok(line, " ");
@@ -75,7 +89,13 @@ static void parse_player(player_t *player, char *line) {
     if (line && !player->depth_set) player->depth = atoi(line);
 }
 
-static void parse_file(settings_t *settings, char *line) {
+/**
+ * Parse a line from the input gamefile
+ *
+ * @param settings_t * settings Settings structure to save parsed data into
+ * @param char * line Input line string to parse
+ */
+static void parse_line(settings_t *settings, char *line) {
     int temp_int = 0;
 
     /* check for `[pb #]` tag */
@@ -125,8 +145,15 @@ static void parse_file(settings_t *settings, char *line) {
     }
 }
 
-/* TODO: check validity of the gamefile structure while processing */
+/**
+ * Load and parse an input gamefile
+ *
+ * @param settings_t * settings Settings structure to save parsed data into
+ * @param unsigned int * hist_len Size of returned history array
+ * @return History array filled with moves from the input gamefile
+ */
 char **file_load(settings_t *settings, unsigned int *hist_len) {
+    /* TODO: check validity of the gamefile structure while processing */
     char **history  = NULL;
     char *input     = NULL;
     char *line      = NULL;
@@ -162,7 +189,7 @@ char **file_load(settings_t *settings, unsigned int *hist_len) {
         }
 
         if (read_game) history_add(history, hist_len, line);
-        else parse_file(settings, line);
+        else parse_line(settings, line);
 
         free(line);
         line = NULL;
