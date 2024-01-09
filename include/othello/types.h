@@ -1,12 +1,24 @@
 #ifndef _OTHELLO_TYPES_H_
 #define _OTHELLO_TYPES_H_
+
+#include <ctype.h>
+#include <i386/limits.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-/* ==== DEFINES ============================================================= */
+/* ==== GLOBAL DEFINES ====================================================== */
 
-#define INPUT_SIZE               0xFF
-#define HISTORY_BUFFER_INCREMENT 32
-#define HISTORY_ELEMENT_SIZE     16
+#define INPUT_SIZE        0xFF
+#define HISTORY_INCREMENT 32
+
+#define STONE_NONE  "·"
+#define STONE_BLACK "○"
+#define STONE_WHITE "◙"
+
+#define CMD_STR_SAVE "save"
+#define CMD_STR_QUIT "quit"
+#define CMD_STR_PASS "pass"
 
 /* ==== ENUMS =============================================================== */
 
@@ -17,20 +29,6 @@ typedef enum {
     /* true = 1 */
     true,
 } bool;
-
-/* Interpreted command code */
-typedef enum {
-    /* No command recognized */
-    CMD_NONE,
-    /* Quit command */
-    CMD_QUIT,
-    /* Save command */
-    CMD_SAVE,
-    /* Player pass */
-    CMD_PASS,
-    /* Player move */
-    CMD_PLAY,
-} command_code;
 
 /* What is the player played by */
 typedef enum {
@@ -66,12 +64,22 @@ typedef struct {
     unsigned int *moves;
 } board_t;
 
+/* Command history */
+typedef struct {
+    /* Array of commands */
+    char **commands;
+    /* Size of the commands array */
+    size_t size;
+} history_t;
+
 /* Player info */
 typedef struct {
     /* Player color */
     player_color color;
     /* If the player is played by a human or minimax */
     player_type type;
+    /* String name of the player type */
+    char *type_str;
     /* If the type has been set from the default value */
     bool type_set;
     /* Name of the player */

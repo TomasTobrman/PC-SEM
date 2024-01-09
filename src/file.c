@@ -1,24 +1,17 @@
 #include "othello/file.h"
 #include "othello/history.h"
-#include "othello/types.h"
-
-#include <malloc/_malloc.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 /**
- * Save game settings and history to an output gamefile
+ * Save game history into an output gamefile
  *
- * @param const settings_t * settings Game settings structure pointer
- * @param char ** history Game history of moves
- * @param unsigned int history_size Size of the history array
- * @return bool Returns true if the saving was successful, else returns false
+ * @param const settings_t * settings Application settings structure pointer
+ * @param const history_t * history Game history with played commands
+ * @return bool Returns false when an error occures, else returns true
  */
-bool file_save(const settings_t *settings, char **history,
-               unsigned int history_size) {
+bool file_save(const settings_t *settings, const history_t *history) {
     unsigned int i = 0;
-    if (!settings || !settings->file_out || !history) return false;
+    if (!settings || !settings->file_out || !history || !history->commands)
+        return false;
 
     /* save player black header */
     if (settings->player_black->type == PLAYER_TYPE_MINIMAX) {
@@ -56,8 +49,9 @@ bool file_save(const settings_t *settings, char **history,
 
     /* save history */
     if (fprintf(settings->file_out, "[game]\n") < 0) return false;
-    for (i = 0; i < history_size; ++i) {
-        if (fprintf(settings->file_out, "%s", history[i]) < 0) return false;
+    for (i = 0; i < history->size; ++i) {
+        if (fprintf(settings->file_out, "%s", history->commands[i]) < 0)
+            return false;
     }
 
     return true;
@@ -76,9 +70,15 @@ static void parse_player(player_t *player, char *line) {
 
     /* player type */
     line = strtok(line, ",");
-    if (line && !player->type_set)
-        player->type =
-            !strcmp(line, "minimax") ? PLAYER_TYPE_MINIMAX : PLAYER_TYPE_HUMAN;
+    if (line && !player->type_set) {
+        if (!strcmp(line, "minimax")) {
+            player->type     = PLAYER_TYPE_MINIMAX;
+            player->type_str = "minimax";
+        } else if (!strcmp(line, "human")) {
+            player->type     = PLAYER_TYPE_HUMAN;
+            player->type_str = "human";
+        }
+    }
 
     /* player name */
     line = strtok(NULL, ",");
@@ -149,26 +149,21 @@ static void parse_line(settings_t *settings, char *line) {
  * Load and parse an input gamefile
  *
  * @param settings_t * settings Settings structure to save parsed data into
- * @param unsigned int * hist_len Size of returned history array
- * @return History array filled with moves from the input gamefile
+ * @return History structure pointer filled with moves from the input gamefile
  */
-char **file_load(settings_t *settings, unsigned int *hist_len) {
+history_t *file_load(settings_t *settings) {
     /* TODO: check validity of the gamefile structure while processing */
-    char **history  = NULL;
-    char *input     = NULL;
-    char *line      = NULL;
-    size_t line_len = 0;
-    bool read_game  = false;
+    history_t *history = NULL;
+    char *input        = NULL;
+    char *line         = NULL;
+    size_t line_len    = 0;
+    bool read_game     = false;
 
     if (!settings || !settings->file_in) return NULL;
 
-    history = (char **)malloc(sizeof(char *) * HISTORY_BUFFER_INCREMENT);
-    if (!history) return NULL;
-    *hist_len = 0;
+    history = history_create();
 
     while ((input = fgetln(settings->file_in, &line_len))) {
-        /* TODO: read settings */
-
         /* initialize new `temp_str` of size `line_len` */
         line = (char *)malloc(sizeof(char) * (line_len + 1));
         if (!line) break;
@@ -188,12 +183,15 @@ char **file_load(settings_t *settings, unsigned int *hist_len) {
             continue;
         }
 
-        if (read_game) history_add(history, hist_len, line);
+        if (read_game) history_add(history, line);
         else parse_line(settings, line);
 
         free(line);
         line = NULL;
     }
+
+    fclose(settings->file_in);
+    settings->file_in = NULL;
 
     return history;
 }

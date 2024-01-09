@@ -1,12 +1,4 @@
 #include "othello/board.h"
-#include "othello/types.h"
-
-#include <stdio.h>
-#include <stdlib.h>
-
-#define STONE_NONE  "·"
-#define STONE_BLACK "○"
-#define STONE_WHITE "◙"
 
 /**
  * Create a new board

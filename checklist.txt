@@ -1,6 +1,5 @@
 ---- Today -----------------------------
 [ ] Input gamefile structure check
-[ ] Heavy Refactoring
 ---- Todo ------------------------------
 ---- Fixes -----------------------------
 ---- Done ------------------------------
@@ -25,5 +24,6 @@
  - [X] Set Settings
 [F] Auto minimax on -size and -init
 [F] Minimax giving wrong moves
+[X] Heavy Refactoring
 [X] Comments
 ----------------------------------------

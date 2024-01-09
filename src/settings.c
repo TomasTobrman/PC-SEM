@@ -6,52 +6,76 @@
 #include <string.h>
 
 /**
- * Set default values to all settings
+ * Create new application settings
  *
- * @param settings_t * settings Settings structure pointer
- * @return bool Returns true if successful, else false
+ * @return settings_t * Allocated structure pointer
  */
-bool settings_set_default(settings_t *settings) {
-    settings->player_black = (player_t *)malloc(sizeof(player_t));
-    if (!settings->player_black) return 1;
-    settings->player_black->type      = PLAYER_TYPE_HUMAN;
-    settings->player_black->color     = PLAYER_COLOR_BLACK;
-    settings->player_black->name[0]   = 'K';
-    settings->player_black->name[1]   = 'a';
-    settings->player_black->name[2]   = 'r';
-    settings->player_black->name[3]   = 'e';
-    settings->player_black->name[4]   = 'l';
-    settings->player_black->depth     = 3;
-    settings->player_black->name_set  = false;
-    settings->player_black->type_set  = false;
-    settings->player_black->depth_set = false;
+settings_t *settings_create() {
+    /* allocate the settings structure pointer */
+    settings_t *settings = (settings_t *)malloc(sizeof(settings_t));
+    if (!settings) return NULL;
 
+    /* allocate the black player structure pointer */
+    settings->player_black = (player_t *)malloc(sizeof(player_t));
+    if (!settings->player_black) {
+        settings_free(&settings);
+        return NULL;
+    }
+
+    /* allocate the white player structure pointer */
     settings->player_white = (player_t *)malloc(sizeof(player_t));
-    if (!settings->player_white) return 2;
-    settings->player_white->type      = PLAYER_TYPE_HUMAN;
-    settings->player_white->color     = PLAYER_COLOR_WHITE;
-    settings->player_white->name[0]   = 'A';
-    settings->player_white->name[1]   = 'n';
-    settings->player_white->name[2]   = 'n';
-    settings->player_white->name[3]   = 'a';
+    if (!settings->player_white) {
+        settings_free(&settings);
+        return NULL;
+    }
+
+    /* set players' colors */
+    settings->player_black->color = PLAYER_COLOR_BLACK;
+    settings->player_white->color = PLAYER_COLOR_WHITE;
+
+    /* set players' type */
+    settings->player_black->type     = PLAYER_TYPE_HUMAN;
+    settings->player_white->type     = PLAYER_TYPE_HUMAN;
+    settings->player_black->type_str = "human";
+    settings->player_white->type_str = "human";
+    settings->player_black->type_set = false;
+    settings->player_white->type_set = false;
+
+    /* set black player's name */
+    strcpy(settings->player_black->name, "Karel");
+    settings->player_black->name_set = false;
+
+    /* set white player's name */
+    strcpy(settings->player_white->name, "Anna");
+    settings->player_white->name_set = false;
+
+    /* set players' minimax search depth */
+    settings->player_black->depth     = 3;
     settings->player_white->depth     = 3;
-    settings->player_white->name_set  = false;
-    settings->player_white->type_set  = false;
+    settings->player_black->depth_set = false;
     settings->player_white->depth_set = false;
 
-    settings->board_cols  = 8;
-    settings->board_rows  = 8;
-    settings->init_col    = 4;
-    settings->init_row    = 4;
-    settings->file_out    = NULL;
-    settings->file_in     = NULL;
-    settings->should_exit = false;
-    settings->next_move   = true;
+    /* set board size */
+    settings->board_cols = 8;
+    settings->board_rows = 8;
+    settings->size_set   = false;
 
-    settings->size_set = false;
+    /* set initial stone placement */
+    settings->init_col = 4;
+    settings->init_row = 4;
     settings->init_set = false;
 
-    return 0;
+    /* set input and output gamefiles to NULL */
+    settings->file_in  = NULL;
+    settings->file_out = NULL;
+
+    /* application should not exit yet */
+    settings->should_exit = false;
+
+    /* process the next move */
+    settings->next_move = true;
+
+    return settings;
 }
 
 /**
@@ -77,9 +101,11 @@ static bool read_player(player_t *player, const char *other_name, int argc,
 
     if (!strcmp(temp_str, "human")) {
         player->type     = PLAYER_TYPE_HUMAN;
+        player->type_str = "human";
         player->type_set = true;
     } else if (!strcmp(temp_str, "minimax")) {
         player->type     = PLAYER_TYPE_MINIMAX;
+        player->type_str = "minimax";
         player->type_set = true;
     } else return false;
 

@@ -4,23 +4,11 @@
 #include "othello/types.h"
 
 /**
- * Set default values to all settings
+ * Create new application settings
  *
- * @param settings_t * settings Settings structure pointer
- * @return bool Returns true if successful, else false
+ * @return settings_t * Allocated structure pointer
  */
-bool settings_set_default(settings_t *settings);
-
-/**
- * Read the initial stone placement from command-line arguments
- *
- * @param settigns_t * settings Settings structure to save read data into
- * @param int argc Number of command-line arguments
- * @param char ** argv Values of command-line arguments
- * @param int * i Current index in the command-line arguments array
- * @return bool Returns true if the player was successfully read, else false
- */
-int settings_process_args(settings_t *settings, int argc, char **argv);
+settings_t *settings_create();
 
 /**
  * Process and assing values from command-line arguments
@@ -29,6 +17,13 @@ int settings_process_args(settings_t *settings, int argc, char **argv);
  * @param int argc Number of command-line arguments
  * @param char ** argv Values of command-line arguments
  * @return int Returns 0 when successfully parsed, else returns error code
+ */
+int settings_process_args(settings_t *settings, int argc, char **argv);
+
+/**
+ * Free the settigns_t structure
+ *
+ * @param settings_t ** settings Address of the settings_t structure pointer
  */
 void settings_free(settings_t **settings);
 

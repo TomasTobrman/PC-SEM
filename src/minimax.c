@@ -1,10 +1,5 @@
 #include "othello/minimax.h"
 #include "othello/board.h"
-#include "othello/types.h"
-
-#include <i386/limits.h>
-#include <stdio.h>
-#include <stdlib.h>
 
 /**
  * Minimax algorithm with Alpha-Beta purging
