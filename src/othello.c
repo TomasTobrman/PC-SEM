@@ -1,4 +1,5 @@
 #include "othello/othello.h"
+#include <stdio.h>
 
 /**
  * Create everything needed for a game of Othello
@@ -37,6 +38,10 @@ int create_game(int argc, char **argv, settings_t **settings, board_t **board,
 
     /* load in predefined moves */
     *history = file_load(*settings);
+    if ((*settings)->file_in && !*history) {
+        printf("%s", errors[4]);
+        return 5;
+    }
 
     /* create a new board */
     *board = board_create((*settings)->board_cols, (*settings)->board_rows);

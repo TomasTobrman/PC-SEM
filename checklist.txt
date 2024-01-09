@@ -1,5 +1,4 @@
 ---- Today -----------------------------
-[ ] Input gamefile structure check
 ---- Todo ------------------------------
 ---- Fixes -----------------------------
 ---- Done ------------------------------
@@ -26,4 +25,5 @@
 [F] Minimax giving wrong moves
 [X] Heavy Refactoring
 [X] Comments
+[F] Input gamefile structure check
 ----------------------------------------

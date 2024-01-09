@@ -1,5 +1,6 @@
 #include "othello/file.h"
 #include "othello/history.h"
+#include <stdio.h>
 
 /**
  * Save game history into an output gamefile
@@ -62,11 +63,14 @@ bool file_save(const settings_t *settings, const history_t *history) {
  *
  * @param player_t * player Player structure into which to save parsed data
  * @param char * line Input line string to parse
+ * @return bool Returns true on success, else returns false
  */
-static void parse_player(player_t *player, char *line) {
+static bool parse_player(player_t *player, char *line) {
     /* get the data part */
     line = strtok(line, " ");
     line = strtok(NULL, "]");
+
+    if (!line) return false;
 
     /* player type */
     line = strtok(line, ",");
@@ -87,6 +91,8 @@ static void parse_player(player_t *player, char *line) {
     /* player depth */
     line = strtok(NULL, ",");
     if (line && !player->depth_set) player->depth = atoi(line);
+
+    return true;
 }
 
 /**
@@ -94,65 +100,69 @@ static void parse_player(player_t *player, char *line) {
  *
  * @param settings_t * settings Settings structure to save parsed data into
  * @param char * line Input line string to parse
+ * @return bool Returns true on success, else returns false
  */
-static void parse_line(settings_t *settings, char *line) {
+static bool parse_line(settings_t *settings, char *line) {
     int temp_int = 0;
 
     /* check for `[pb #]` tag */
     if (strstr(line, "[pb ")) {
-        parse_player(settings->player_black, line);
-        return;
+        return parse_player(settings->player_black, line);
     }
 
     /* check for `[pw #]` tag */
     if (strstr(line, "[pw ")) {
-        parse_player(settings->player_white, line);
-        return;
+        return parse_player(settings->player_white, line);
     }
 
     /* check for `[size # #]` tag */
     if (strstr(line, "[size ")) {
-        if (settings->size_set) return;
+        if (settings->size_set) return true;
 
         line = strtok(line, " ");
 
         /* parse number of rows */
         temp_int = atoi(strtok(NULL, " "));
         if (temp_int > 1) settings->board_rows = temp_int;
+        else return false;
 
         /* parse number of columns */
         temp_int = atoi(strtok(NULL, "]"));
         if (temp_int > 1) settings->board_cols = temp_int;
+        else return false;
 
-        return;
+        return true;
     }
 
     /* check for `[init # #]` tag */
     if (strstr(line, "[init ")) {
-        if (settings->init_set) return;
+        if (settings->init_set) return true;
 
         line = strtok(line, " ");
 
         temp_int = atoi(strtok(NULL, " "));
         if (temp_int > 0 && temp_int < settings->board_rows)
             settings->init_row = temp_int;
+        else return false;
 
         temp_int = atoi(strtok(NULL, "]"));
         if (temp_int > 0 && temp_int < settings->board_cols)
             settings->init_col = temp_int;
+        else return false;
 
-        return;
+        return true;
     }
+
+    return false;
 }
 
 /**
  * Load and parse an input gamefile
  *
  * @param settings_t * settings Settings structure to save parsed data into
- * @return History structure pointer filled with moves from the input gamefile
+ * @return History filled with moves from the input gamefile or NULL on error
  */
 history_t *file_load(settings_t *settings) {
-    /* TODO: check validity of the gamefile structure while processing */
     history_t *history = NULL;
     char *input        = NULL;
     char *line         = NULL;
@@ -162,6 +172,7 @@ history_t *file_load(settings_t *settings) {
     if (!settings || !settings->file_in) return NULL;
 
     history = history_create();
+    if (!history) return NULL;
 
     while ((input = fgetln(settings->file_in, &line_len))) {
         /* initialize new `temp_str` of size `line_len` */
@@ -183,15 +194,17 @@ history_t *file_load(settings_t *settings) {
             continue;
         }
 
-        if (read_game) history_add(history, line);
-        else parse_line(settings, line);
+        if (read_game) {
+            /* read the game history from input gamefile */
+            history_add(history, line);
+        } else {
+            /* try to parse the current input line */
+            if (!parse_line(settings, line)) return NULL;
+        }
 
         free(line);
         line = NULL;
     }
-
-    fclose(settings->file_in);
-    settings->file_in = NULL;
 
     return history;
 }
