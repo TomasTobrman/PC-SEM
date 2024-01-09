@@ -6,6 +6,8 @@ data/
 desktop.ini
 
 doc/
-!doc/assignment.pdf
-!doc/documentation.tex
-!doc/img/fav.pdf
+
+!*/doc/assignment.pdf
+!*/doc/documentation.tex
+!*/doc/sec/*.tex
+!*/doc/img/*
