@@ -1,8 +1,8 @@
 ---- Today -----------------------------
----- Todo ------------------------------
+[ ] Input gamefile structure check
 [ ] Heavy Refactoring
+---- Todo ------------------------------
 ---- Fixes -----------------------------
-[ ] input gamefile structure check
 ---- Done ------------------------------
 [X] Board Structure
 [X] Board Drawing
@@ -23,6 +23,7 @@
  - [X] Add to History
  - [X] Play the loaded History
  - [X] Set Settings
-[F] auto minimax on -size and -init
+[F] Auto minimax on -size and -init
 [F] Minimax giving wrong moves
+[X] Comments
 ----------------------------------------
