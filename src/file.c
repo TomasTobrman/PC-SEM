@@ -171,6 +171,7 @@ history_t *file_load(settings_t *settings) {
 
     if (!settings || !settings->file_in) return NULL;
 
+    /* create a new history */
     history = history_create();
     if (!history) return NULL;
 
@@ -202,6 +203,7 @@ history_t *file_load(settings_t *settings) {
             if (!parse_line(settings, line)) return NULL;
         }
 
+        /* free the current line */
         free(line);
         line = NULL;
     }

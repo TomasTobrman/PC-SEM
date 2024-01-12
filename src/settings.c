@@ -200,7 +200,7 @@ static bool read_file(const char *method, FILE **file, int argc, char **argv,
                       int *i) {
     if (*i + 1 >= argc) return false;
 
-    /* open output gamefile */
+    /* open gamefile with method */
     *file = fopen(argv[++*i], method);
     if (!*file) return false;
 

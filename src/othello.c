@@ -14,18 +14,19 @@
 int create_game(int argc, char **argv, settings_t **settings, board_t **board,
                 history_t **history) {
     int args_status       = 0;
-    const char *errors[5] = {
+    const char *errors[6] = {
         "Invalid player description!\n",
         "Invalid board size!\n",
         "Unable to place initial stones!\n",
         "Invalid output file destination!\n",
         "Invalid input file!\n",
+        "something went wrong...\n",
     };
 
     /* set default settings */
     *settings = settings_create();
     if (!*settings) {
-        printf("something went wrong...\n");
+        printf("%s", errors[5]);
         return -1;
     }
 
@@ -48,7 +49,7 @@ int create_game(int argc, char **argv, settings_t **settings, board_t **board,
     if (!board) {
         if (history) history_free(history);
         settings_free(settings);
-        printf("something went wrong...\n");
+        printf("%s", errors[5]);
         return -1;
     }
 
@@ -117,7 +118,7 @@ bool play_command(board_t *board, player_t *cur_player, settings_t *settings,
 
     if (!command || !board || !cur_player || !settings) return false;
 
-    /* copy the command string */
+    /* copy the command string so it can be altered */
     temp_str = (char *)malloc(strlen(command) + 1);
     if (!temp_str) return false;
     strcpy(temp_str, command);
@@ -130,6 +131,9 @@ bool play_command(board_t *board, player_t *cur_player, settings_t *settings,
 
     /* quit command given */
     if (!strcmp(temp_str, CMD_STR_QUIT)) {
+        /* free the temp_str as there is no other use for it */
+        free(temp_str);
+
         /* application should exit */
         settings->should_exit = true;
         return true;
@@ -137,6 +141,9 @@ bool play_command(board_t *board, player_t *cur_player, settings_t *settings,
 
     /* pass command given */
     if (!strcmp(temp_str, CMD_STR_PASS)) {
+        /* free the temp_str as there is no other use for it */
+        free(temp_str);
+
         /* is this a valid move */
         if (board_can_play(board)) {
             printf("Invalid move!\n");
@@ -154,6 +161,9 @@ bool play_command(board_t *board, player_t *cur_player, settings_t *settings,
 
     /* save command given */
     if (!strcmp(temp_str, CMD_STR_SAVE)) {
+        /* free the temp_str as there is no other use for it */
+        free(temp_str);
+
         /* was an output file given */
         if (!settings->file_out || !file_save(settings, history)) {
             printf("Invalid output file destination!\n");
@@ -214,29 +224,37 @@ bool play_minimax(board_t *board, player_t *cur_player, settings_t *settings,
     minimax(cur_player->color, board, cur_player->depth, INT_MIN, INT_MAX, true,
             &play_col, &play_row);
 
+    /* if the play coordinates are 0, play a pass command */
     if (play_col == 0 && play_row == 0) {
         printf("(%s:%s) > pass\n", cur_player->name, "minimax");
         settings->next_move = true;
+
+        /* save the pass command into history */
         if (history) history_add(history, "pass\n");
+
         return true;
     }
 
     printf("(%s:%s) > %d_%d\n", cur_player->name, "minimax", play_row,
            play_col);
 
+    /* check if play coordinates are in bounds or not */
     if (play_col <= 0 || play_col > settings->board_cols || play_row <= 0 ||
         play_row > settings->board_rows) {
         printf("Invalid move!\n");
         return true;
     }
 
+    /* try to play the move */
     if (!board_play(board, cur_player->color, play_col, play_row)) {
         printf("Invalid move!\n");
         return true;
     }
 
+    /* process the next move */
     settings->next_move = true;
 
+    /* add the play command into history */
     if (history) {
         sprintf(command, "%d_%d\n", play_row, play_col);
         history_add(history, command);
@@ -261,6 +279,7 @@ bool play_history(board_t *board, player_t **cur_player, settings_t *settings,
     if (!settings || !board || !history || !cur_player) return false;
 
     for (i = 0; i < history->size; ++i) {
+        /* process the next move */
         next_move(settings, board, cur_player);
 
         if ((*cur_player)->type == PLAYER_TYPE_MINIMAX) {
@@ -301,5 +320,6 @@ bool is_game_over(const board_t *board) {
     /* game over if both players cannot play */
     if (!white_can_play && !black_can_play) return true;
 
+    /* else it is not game over */
     return false;
 }

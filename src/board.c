@@ -12,27 +12,32 @@ board_t *board_create(unsigned int width, unsigned int height) {
     board_t *board = NULL;
     unsigned int i = 0;
 
+    /* allocate a new board */
     board = (board_t *)malloc(sizeof(board_t));
     if (!board) return NULL;
 
+    /* set board values */
     board->width  = width;
     board->height = height;
     board->size   = board->width * board->height;
     board->data   = NULL;
     board->moves  = NULL;
 
+    /* allocate board data */
     board->data = (player_color *)malloc(board->size * sizeof(player_color));
     if (!board->data) {
         board_free(&board);
         return NULL;
     }
 
+    /* allocate board moves */
     board->moves = (unsigned int *)malloc(board->size * sizeof(unsigned int));
     if (!board->moves) {
         board_free(&board);
         return NULL;
     }
 
+    /* initialize arrays to "empty" values */
     for (i = 0; i < board->size; ++i) {
         board->data[i]  = PLAYER_COLOR_NONE;
         board->moves[i] = 0;
@@ -51,11 +56,14 @@ board_t *board_copy(const board_t *original) {
     board_t *board = NULL;
     unsigned int i = 0;
 
+    /* if original is null or does not have arrays allocated, return NULL */
     if (!original || !original->data || !original->moves) return NULL;
 
+    /* create a new board with original's dimensions */
     board = board_create(original->width, original->height);
     if (!board) return NULL;
 
+    /* set new board's array values to those of the original */
     for (i = 0; i < board->size; ++i) {
         board->data[i]  = original->data[i];
         board->moves[i] = original->moves[i];
@@ -77,6 +85,7 @@ bool board_init(const board_t *board, unsigned int col, unsigned int row) {
         col <= 0 || col >= board->width)
         return false;
 
+    /* place four initial stones on the board */
     board->data[(row - 1) * board->width + (col - 1)] = PLAYER_COLOR_WHITE;
     board->data[(row - 1) * board->width + (col - 0)] = PLAYER_COLOR_BLACK;
     board->data[(row - 0) * board->width + (col - 1)] = PLAYER_COLOR_BLACK;
@@ -109,6 +118,7 @@ void board_draw(const board_t *board) {
     if (!board || !board->data) return;
 
     for (i = 0; i < board->size; ++i) {
+        /* print a corresponding stone string representation */
         switch (board->data[i]) {
             case PLAYER_COLOR_BLACK:
                 printf(" %s ", STONE_BLACK);
@@ -120,6 +130,7 @@ void board_draw(const board_t *board) {
                 printf(" %s ", STONE_NONE);
                 break;
         }
+        /* print a new-line character if the index overflows the board width */
         if (!((i + 1) % board->width)) printf("\n");
     }
 }
@@ -145,6 +156,7 @@ static int check_direction(const board_t *board, player_color color,
     int orow  = row;
 
     for (;;) {
+        /* move in the direction */
         ocol += dir_col;
         orow += dir_row;
 
@@ -162,9 +174,11 @@ static int check_direction(const board_t *board, player_color color,
 
         /* move is valid */
         if (board->data[i] == color) {
-            for (; flip;) {
+            /* flip the stones while moving back to the original possition */
+            while (flip) {
                 if (ocol == col && orow == row) break;
                 board->data[orow * board->width + ocol] = color;
+                /* move back */
                 ocol -= dir_col;
                 orow -= dir_row;
             }
@@ -198,6 +212,7 @@ static int check_3x3(const board_t *board, player_color color, unsigned int col,
 
     /* dir = ↖ ↑ ↗ ← → ↙ ↓ ↘ */
     for (dir = 0; dir < 8; ++dir) {
+        /* offset position in a direction */
         ocol = col + dir_col[dir];
         orow = row + dir_row[dir];
 
@@ -265,16 +280,23 @@ bool board_play(const board_t *board, player_color color, unsigned int col,
 
     if (!board || !board->data || !board->moves) return false;
 
-    col -= 1;
-    row -= 1;
+    /* if the position is out of bound, return false */
+    if (col > board->width || row > board->height) return false;
 
-    if (col >= board->width || row >= board->height) return false;
+    /* decrement coordinates to make them indices */
+    --col;
+    --row;
 
+    /* calculate 1D index */
     i = row * board->width + col;
+
+    /* if there is no move on the position, return false */
     if (!board->moves[i]) return false;
 
+    /* check around the cell and flip taken stones */
     check_3x3(board, color, col, row, true);
 
+    /* add a stone to the played position */
     board->data[i] = color;
 
     return true;
