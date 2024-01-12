@@ -23,29 +23,24 @@
 /* ==== ENUMS =============================================================== */
 
 /* bool type implementation */
-typedef enum {
-    /* false = 0 */
-    false,
-    /* true = 1 */
-    true,
-} bool;
+typedef enum { false = 0, true = 1 } bool;
 
 /* What is the player played by */
 typedef enum {
     /* Human player */
-    PLAYER_TYPE_HUMAN,
+    PLAYER_TYPE_HUMAN = 0,
     /* Minimax algorithm */
-    PLAYER_TYPE_MINIMAX,
+    PLAYER_TYPE_MINIMAX = 1
 } player_type;
 
 /* Color of the player stone */
 typedef enum {
     /* Stone has no color or cell is blank */
-    PLAYER_COLOR_NONE,
+    PLAYER_COLOR_NONE = 0,
     /* Black stone color */
-    PLAYER_COLOR_BLACK,
+    PLAYER_COLOR_BLACK = 1,
     /* White stone color */
-    PLAYER_COLOR_WHITE,
+    PLAYER_COLOR_WHITE = 2
 } player_color;
 
 /* ==== STRUCTS ============================================================= */

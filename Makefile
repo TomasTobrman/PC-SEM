@@ -22,7 +22,7 @@ OBJECTS := $(patsubst $(DIR_SRC)/%.c, $(DIR_OBJ)/%.o, $(SOURCES))
 WARN := -Wall
 
 CC := gcc
-CFLAGS := -xc -std=c90 -I$(DIR_INC) -g
+CFLAGS := -xc -ansi -pedantic -I$(DIR_INC) -g
 
 LD := gcc
 LDFLAGS := 
