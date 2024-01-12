@@ -7,21 +7,18 @@ EXTENSION := .exe
 
 # ==== Directories =========================================================== #
 
-DIR_BIN := bin
 DIR_OBJ := obj
 DIR_SRC := src
-
 DIR_INC := include
 
 # ==== Files ================================================================= #
 
-TARGET := $(DIR_BIN)/$(PROJECT)$(EXTENSION)
+TARGET := $(PROJECT)$(EXTENSION)
 SOURCES := $(shell find $(DIR_SRC) -type f -name '*.c')
 OBJECTS := $(patsubst $(DIR_SRC)/%.c, $(DIR_OBJ)/%.o, $(SOURCES))
 
 # ==== Commands ============================================================== #
 
-ARGS := 
 WARN := -Wall
 
 CC := gcc
@@ -37,21 +34,14 @@ default: mkdirs build
 .PHONY: build
 build: $(TARGET)
 
-.PHONY: run
-run: $(TARGET)
-	./$(TARGET) $(ARGS)
-
 .PHONY: clean
 clean:
-	rm -rf $(DIR_BIN)/* $(DIR_OBJ)/*
+	rm -rf $(TARGET) $(DIR_OBJ)/*.o
 
 .PHONY: mkdirs
-mkdirs: $(DIR_BIN) $(DIR_OBJ)
+mkdirs: $(DIR_OBJ)
 
 # ==== Targets =============================================================== #
-
-$(DIR_BIN):
-	mkdir -p $@
 
 $(DIR_OBJ):
 	mkdir -p $@

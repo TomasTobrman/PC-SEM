@@ -1,13 +1,15 @@
+# Build dirs
 bin/
 obj/
 data/
 
+# OS Files
 .DS_Store
 desktop.ini
 
-doc/
-
-!*/doc/assignment.pdf
-!*/doc/documentation.tex
-!*/doc/sec/*.tex
-!*/doc/img/*
+# TeX
+*.aux
+*.log
+*.out
+*.synctex.gz
+*.toc

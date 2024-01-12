@@ -7,25 +7,29 @@ EXTENSION := .exe
 
 # ==== Directories =========================================================== #
 
-DIR_BIN := bin
 DIR_OBJ := obj
 DIR_SRC := src
-
 DIR_INC := include
 
 # ==== Files ================================================================= #
 
-TARGET := $(DIR_BIN)\\$(PROJECT)$(EXTENSION)
-SOURCES := $(shell find $(DIR_SRC) -type f -name '*.c')
+TARGET := $(PROJECT)$(EXTENSION)
+SOURCES := \
+	$(DIR_SRC)\\board.c \
+	$(DIR_SRC)\\file.c \
+	$(DIR_SRC)\\history.c \
+	$(DIR_SRC)\\main.c \
+	$(DIR_SRC)\\minimax.c \
+	$(DIR_SRC)\\othello.c \
+	$(DIR_SRC)\\settings.c
 OBJECTS := $(patsubst $(DIR_SRC)\\%.c, $(DIR_OBJ)\\%.o, $(SOURCES))
 
 # ==== Commands ============================================================== #
 
-ARGS := 
 WARN := -Wall
 
 CC := gcc.exe
-CFLAGS := -xc -std=c90 -I$(DIR_INC)
+CFLAGS := -xc -std=c90 -I$(DIR_INC) -g
 
 LD := gcc.exe
 LDFLAGS := 
@@ -37,21 +41,14 @@ default: mkdirs build
 .PHONY: build
 build: $(TARGET)
 
-.PHONY: run
-run: $(TARGET)
-	.\\$(TARGET) $(ARGS)
-
 .PHONY: clean
 clean:
-	del $(DIR_BIN)\\* $(DIR_OBJ)\\*
+	del $(TARGET) $(DIR_OBJ)\\*.o
 
 .PHONY: mkdirs
-mkdirs: $(DIR_BIN) $(DIR_OBJ)
+mkdirs: $(DIR_OBJ)
 
 # ==== Targets =============================================================== #
-
-$(DIR_BIN):
-	mkdir $@
 
 $(DIR_OBJ):
 	mkdir $@
