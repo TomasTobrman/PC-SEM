@@ -1,0 +1,61 @@
+% NA TOHLE SE RADĚJI ANI NEKOUKEJTE... :-D
+
+\usepackage{xargs}
+\usepackage{tikz}
+\usetikzlibrary{positioning, math, calc, shadows.blur, trees}
+
+\definecolor{othelloboard}{RGB}{46,90,55}
+\definecolor{whitestone}{RGB}{240,240,240}
+\definecolor{blackstone}{RGB}{30,30,30}
+
+\tikzset{
+    stone/.style={draw=black},
+    possible stone/.style={opacity=0.3, font={\footnotesize}},
+    shadowed stone/.style={stone, blur shadow={shadow blur steps=7, shadow xshift=0.7pt, shadow yshift=-0.7pt}},
+    white stone/.style={fill=whitestone, text=black},
+    white shadowed stone/.style={white stone, shadowed stone},
+    white possible stone/.style={possible stone, white stone},
+    black stone/.style={fill=blackstone, text=white},
+    black shadowed stone/.style={black stone, shadowed stone},
+    black possible stone/.style={possible stone, black stone}
+}
+
+\newcommand{\drawstone}[4]{
+    \draw[#3]
+        (\numexpr#2-1\relax, \numexpr-#1+1\relax)
+        circle (10pt)
+        node {#4};
+}
+
+\newcommand{\whitestone}[2]{\drawstone{#1}{#2}{white shadowed stone}{}}
+\newcommand{\blackstone}[2]{\drawstone{#1}{#2}{black shadowed stone}{}}
+\newcommand{\whitepossiblestone}[3]{\drawstone{#1}{#2}{white possible stone}{#3}}
+\newcommand{\blackpossiblestone}[3]{\drawstone{#1}{#2}{black possible stone}{#3}}
+
+\newenvironmentx{othellogame}[3][1=show]{
+    \begin{tikzpicture}[
+            indice/.style={color=black!60, font={\small}},
+            scale=0.8
+        ]
+        \def\rows{#2}
+        \def\cols{#3}
+
+        % draw desk
+        \draw[shift={(-0.5, 0.5)}, very thick, step=1, fill=othelloboard, rounded corners=0mm] (0, 0) grid (\cols, -\rows) rectangle (0, 0);
+
+        % draw indices for rows
+        \ifnum\pdfstrcmp{#1}{show}=0
+            \foreach \r in {0,...,\numexpr\rows-1\relax} {
+                \pgfmathsetmacro\result{\r+1}
+                \node [indice] at (-1, -\r) {\pgfmathprintnumber{\result}};
+            }
+
+            % draw indices for cols
+            \foreach \c in {0,...,\numexpr\cols-1\relax} {
+                \pgfmathsetmacro\result{\c+1}
+                \node [indice] at (\c, 1) {\pgfmathprintnumber{\result}};
+            }
+        \else
+            \relax
+        \fi
+}{\end{tikzpicture}}

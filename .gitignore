@@ -1,7 +1,9 @@
 # Build dirs
-bin/
-obj/
 data/
+obj/
+
+# Compilation output
+*.exe
 
 # OS Files
 .DS_Store

@@ -1,0 +1,57 @@
+\usepackage{listings}
+
+% Formátování konzolových rozhraní
+\newcommand*{\bashuser}{user@machine}
+\newcommand*{\bashworkdirplain}{\raisebox{0.5ex}{\texttildelow}}
+\newcommand*{\bashworkdir}{\bashworkdirplain/semestralka}
+\newcommand*{\bashtestdir}{/validator}
+\newcommand*{\bashterminalplain}{{\color{OliveGreen}\bfseries\bashuser}:{\color{MidnightBlue}\bfseries\bashworkdirplain}\$}
+\newcommand*{\bashterminal}{{\color{OliveGreen}\bfseries\bashuser}:{\color{MidnightBlue}\bfseries\bashworkdir}\$}
+\newcommand*{\bashtestterminal}{{\color{OliveGreen}\bfseries\bashuser}:{\color{MidnightBlue}\bfseries\bashtestdir}\$}
+\newcommand*{\bashtest}{{\color{OliveGreen}\bfseries\bashuser}:{\color{MidnightBlue}\bfseries\bashtestdir}\$}
+\newcommand*{\bashdir}[1]{{\color{MidnightBlue}#1}}
+
+\lstset{
+    columns=fullflexible,
+    captionpos=t,
+    frame=single,
+    aboveskip=\baselineskip,
+    backgroundcolor=\color{gray!20},
+    basicstyle=\ttfamily,
+    stringstyle=\color{warncolor},
+    escapechar=`,
+    breaklines=true,
+    literate=   {-}{{-\allowbreak}}{1}
+                {0}{{0\allowbreak}}{1}
+                {1}{{1\allowbreak}}{1}
+                {2}{{2\allowbreak}}{1}
+                {3}{{3\allowbreak}}{1}
+                {4}{{4\allowbreak}}{1}
+                {5}{{5\allowbreak}}{1}
+                {6}{{6\allowbreak}}{1}
+                {7}{{7\allowbreak}}{1}
+                {8}{{8\allowbreak}}{1}
+                {9}{{9\allowbreak}}{1}
+                {a}{{a\allowbreak}}{1}
+                {b}{{b\allowbreak}}{1}
+                {c}{{c\allowbreak}}{1}
+                {d}{{d\allowbreak}}{1}
+                {e}{{e\allowbreak}}{1}
+                {f}{{f\allowbreak}}{1},
+    breakindent=0pt
+}
+
+\lstdefinestyle{plainconsole}{
+    numbers=none,
+    aboveskip=0mm,
+    belowskip=0mm
+}
+
+\lstdefinestyle{console}{
+    numbers=left,
+    numbersep=5pt,
+    numberstyle=\tiny\color{blue},
+    stepnumber=1
+}
+
+\renewcommand{\lstlistingname}{Konzole}
