@@ -51,10 +51,10 @@ mkdirs: $(DIR_BIN) $(DIR_OBJ)
 # ==== Targets =============================================================== #
 
 $(DIR_BIN):
-	mkdir -p $@
+	mkdir $@
 
 $(DIR_OBJ):
-	mkdir -p $@
+	mkdir $@
 
 $(TARGET): $(OBJECTS)
 	$(LD) $(WARN) $(LDFLAGS) -o $@ $^
