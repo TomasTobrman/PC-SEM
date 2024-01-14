@@ -1,1 +1,175 @@
 \section{Uživatelská příručka}
+
+V~této sekci je popsaný postup sestavení a~spuštění aplikace \lstinline{othello.exe} a~příkazy pro hraní a~ovládání programu.
+
+\subsection{Sestavení} \label{sec:manual_build}
+
+Pro sestavení aplikace do spustitelné formy je zapotřebí programů \lstinline{make} a~\lstinline{gcc}. Pro operační systémy \textbf{Windows} se oba programy nácházejí v~prostředí \textbf{MinGW}. Operační systémy typu \textbf{Linux} by měly tyto nástroje mít již předinstalované. Pro ověření jejich existence je stačí vyvolat v~konzolovém prostředí. Pokud jejich výstup vypadá podobně jako v~ukázce konzole \ref{console:cmdexist} na straně \pageref{console:cmdexist}, pak jsou nástroje nainstalovány. Na operačním systému \textbf{Mac~OS~X} je třeba nainstalovat \emph{Command Line Tools for Xcode}. Jejich instalaci lze vyvolat příkazem \lstinline{gcc}, pokud nejsou již nainstalované.
+
+Pro instalaci \textbf{MinGW} následujte pokyny na stránkách \url{https://www.mingw-w64.org/}, nebo využijte nástroj \textbf{Chocolatey} (Konzole \ref{console:chocolatey}, strana \pageref{console:chocolatey}), pokud je nainstalovaný.
+
+\begin{lstlisting}[
+	style=console,
+	caption={Instalace nástrojů přes manažera pracovních balíků Chocolatey.},
+	label={console:chocolatey}
+]
+PS C:\> choco install mingw
+\end{lstlisting}
+
+Po nainstalování \textbf{MinGW} by měly být přístupné příkazy \lstinline{make.exe} a~\lstinline{gcc.exe} v~příkazové řádce. Lze využít program \textbf{CMD} nebo \textbf{PowerShell} k~otevření konzole. Ověření správné instalace se dá provést jejich vyvoláním (Konzole \ref{console:cmdexist}, strana \pageref{console:cmdexist}). Pokud výstup programů vypadá jinak, než v~ukázce konzole, pak je možné, že je třeba přidat cestu k~programům do proměnné prostředí \lstinline{PATH} a~restartovat konzoli.
+
+\begin{lstlisting}[
+	style=console,
+	caption={Ověření existence nástrojů \lstinline{make.exe} a~\lstinline{gcc.exe} z~příkazové řádky.},
+	label={console:cmdexist}
+]
+PS C:\> gcc.exe
+gcc.exe: fatal error: no input files
+compilation terminated.
+PS C:\> make.exe
+make.exe: *** No targets specified and no makefile found. Stop.
+\end{lstlisting}
+
+Jestli že máte dostupné oba nástroje z~příkazové řádky, navigujte se do adresáře s~touto semestrální prací příkazem \lstinline{cd}. Na \textbf{Windows} využijte příkaz \lstinline{make.exe -f Makefile.win} a~na systémech \textbf{Linux} a~\textbf{Mac~OS~X} příkaz \lstinline{make -f Makefile} nebo jen \lstinline{make}. Pokud vše proběhlo správně, výstup by měl vypadat podobně jako v~ukázce \ref{console:make} na straně \pageref{console:make}. Spustitelný program by se nyní měl nacházet v~kořenové složce projektu.
+
+\begin{lstlisting}[
+	style=console,
+	caption={Ukázka sestavení projektu pomocí nástroje \lstinline{make} na operačním systému \textbf{Mac~OS~X}.},
+	label={console:make}
+]
+`\bashterminalplain` cd `\bashworkdir`
+`\bashterminal` make -f Makefile
+mkdir -p obj
+gcc -Wall -xc -ansi -pedantic -Iinclude -g -c -o obj/history.o src/history.c
+gcc -Wall -xc -ansi -pedantic -Iinclude -g -c -o obj/othello.o src/othello.c
+gcc -Wall -xc -ansi -pedantic -Iinclude -g -c -o obj/board.o src/board.c
+gcc -Wall -xc -ansi -pedantic -Iinclude -g -c -o obj/main.o src/main.c
+gcc -Wall -xc -ansi -pedantic -Iinclude -g -c -o obj/settings.o src/settings.c
+gcc -Wall -xc -ansi -pedantic -Iinclude -g -c -o obj/file.o src/file.c
+gcc -Wall -xc -ansi -pedantic -Iinclude -g -c -o obj/minimax.o src/minimax.c
+gcc -Wall  -o othello.exe obj/history.o obj/othello.o obj/board.o obj/main.o obj/settings.o obj/file.o obj/minimax.o
+\end{lstlisting}
+
+\subsection{Spuštění}
+
+Pro spuštění programu \lstinline{othello.exe} je třeba ho nejprve sestavit. Pokud tak nebylo učiněno, následujte prosím sekci \ref{sec:manual_build}.
+
+V~kořenovém adresáři semestrální práce by se měl nacházet soubor jménem \lstinline{othello.exe}. Tento program je třeba spustit v~příkazové konzoli. V~operačním systému \textbf{Windows} lze využít program \textbf{CMD} nebo \textbf{PowerShell}. Na \textbf{Mac~OS~X} otevřete aplikaci \textbf{Terminal}, která je předinstalovaná se systémem.
+
+Přepínače programu jsou popsány v~kompletním zadání úlohy \cite{assign}. Zde je vypsána zkrácená verze (Tabulka~\ref{tbl:switches}, strana \pageref{tbl:switches}). Všechny přepínače jsou \emph{nepovinné} a~mohou být zadány v~libovolném pořadí. Jejich argumenty se rozdělují na povinné (\texttt{<>}) a~nepovinné (\texttt{[]}). Příklad spuštění programu je vidět v~ukázce konzole \ref{console:run} na straně \pageref{console:run}.
+
+\begin{table}[h]
+
+\centering
+
+\begin{tabular}{|l|l|l|}
+	\hline
+	Přepínač & Argumenty & Popis \\
+	\hline\hline
+	\switch{-pb} & \argument{<human/minimax>[,name][,d]} & Popis hráče s černými kameny. \\
+	\hline
+	\switch{-pw} & \argument{<human/minimax>[,name][,d]} & Popis hráče s bílými kameny. \\
+	\hline
+	\switch{-size} & \switch{<r>} \switch{<c>} & Rozměry hrací plochy. \\
+	\hline
+	\switch{-init} & \switch{<r>} \switch{<c>} & Pozice počátečních kamenů. \\
+	\hline
+	\switch{-o} & \argument{<cesta\_k\_souboru>} & Výstupní soubor hry. \\
+	\hline
+	\switch{-i} & \argument{<cesta\_k\_souboru>} & Vstupní soubor hry. \\
+	\hline
+\end{tabular}
+
+\caption{Popis přepínačů a~jejich argumentů.}
+\label{tbl:switches}
+
+\end{table}
+
+\begin{lstlisting}[
+	style=console,
+	caption={Ukázka spuštění programu v~operačním systému Windows (kvůli limitaci dokumentace nelze ukázat celý výstup).},
+	label={console:run}
+]
+PS C:\semestralka> .\othello.exe -pb minimax -size 6 6 -init 3 3 -o output.txt
+(Karel:minimax) > 2_3
+(Anna:human) > quit
+\end{lstlisting}
+
+\newpage
+
+\subsection{Ovládání}
+
+Pokud byla hra spuštěna s~aspoň jedním lidským hráčem, uživatel má dostupné čtyři příkazy. Tyto příkazy jsou popsány v~tabulce \ref{tbl:controlls} na straně \pageref{tbl:controlls}. Pokud jsou oba hráči nastaveni na \switch{minimax}, pak hra probíhá automaticky dokud nedosáhne konce.
+
+\begin{table}[h]
+
+\centering
+
+\begin{tabular}{|l|l|}
+	\hline
+	Příkaz & Popis\\
+	\hline\hline
+	\switch{save} & Pokud byl program spuštěn s~přepínačem \switch{-o}, uživatel může uložit historii hry. \\
+	\hline
+	\switch{quit} & Ukončí běh programu a~vypíše stav. S~přepínačem \switch{-o} se uloží historie hry. \\
+	\hline
+	\switch{pass} & Hráč přeskočí svůj tah. \\
+	\hline
+	\switch{<r>\_<c>} & Uveďte řádek (\switch{<r>}) a~sloupec (\switch{<c>}), který chcete hrát. \\
+	\hline
+\end{tabular}
+
+\caption{Popis příkazů lidského hráče.}
+\label{tbl:controlls}
+
+\end{table}
+
+\subsection{Struktura vstupního souboru}
+
+Vstupní soubor nastavuje vlastnosti hry a~může obsahovat historii, která je následně odehrána. Nastavení hry se dá přepsat přepínači při spuštění programu, které jsou popsané v~tabulce \ref{tbl:switches} na straně \pageref{tbl:switches}.
+
+Vstupní soubor může obsahovat nastavení popsané v~tabulce \ref{tbl:filesettings} na straně \pageref{tbl:filesettings}. Ukázkový soubor je vidět v~konzolovém výpise \ref{console:inputfile} na straně \pageref{console:inputfile}. Jednotlivé elementy mají stejnou strukturu jako jejich ekvivalentní přepínače a~kromě elementu \switch{[game]}, který musí být uveden jako poslední a~následován historií hry, mohou být v~libovolném pořadí.
+
+\begin{table}[h]
+
+\centering
+
+\begin{tabular}{|l|l|}
+	\hline
+	Nastavení & Popis \\
+	\hline\hline
+	\switch{[pb <desc>]} & Popis hráče s~černými kameny. Struktura jako odpovídající přepínač. \\
+	\hline
+	\switch{[pw <desc>]} & Popis hráče s~bílými kameny. Struktura jako odpovídající přepínač. \\
+	\hline
+	\switch{[size <r> <c>]} & Počet řádek (\switch{<r>}) a~sloupců (\switch{<c>}) hrací desky. \\
+	\hline
+	\switch{[init <r> <c>]} & Nastaví řádek (\switch{<r>}) a~sloupec (\switch{<c>}) počátečních kamenů. \\
+	\hline
+	\switch{[game]} & Znázorňuje začátek historie hry. \\
+	\hline
+\end{tabular}
+
+\caption{Struktura možných nastavení hry pomocí vstupního souboru.}
+\label{tbl:filesettings}
+
+\end{table}
+
+\begin{lstlisting}[
+	style=console,
+	caption={Ukázkový vstupní soubor.},
+	label={console:inputfile}
+]
+`\bashterminal` bat input.txt
+[size 8 8]
+[init 4 4]
+[pb minimax]
+[game]
+3_4
+5_3
+6_2
+2_4
+5_6
+7_1
+1_4
+\end{lstlisting}

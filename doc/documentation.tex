@@ -1,53 +1,115 @@
-\documentclass[12pt, a4paper]{article}
+\documentclass[10pt]{article}
 
-\usepackage[czech]{babel}
+\usepackage{a4wide, multicol}
+
 \usepackage[IL2]{fontenc}
+\usepackage[czech]{babel}
 \usepackage[utf8]{inputenc}
-\usepackage{enumitem}
-\usepackage{parskip}
-\usepackage{tocloft}
+
+\usepackage[usenames, dvipsnames]{xcolor}
+\usepackage{amssymb, amsmath, amsfonts, bm}
 \usepackage[hidelinks]{hyperref}
-\usepackage{graphicx}
+\usepackage{booktabs, lscape, pdflscape}
+\usepackage{parskip}
+\setlength{\parskip}{0.75\baselineskip plus 2pt}
 
+\font\bx=csssbx10 scaled 1500
+\font\bxn=csssbx10 scaled 1000
+\definecolor{warncolor}{RGB}{223, 64, 32}
+
+\usepackage[shortlabels]{enumitem}
+\usepackage{calc}
+\newlength\widest
+\newcommand*{\switch}[1]{{\ttfamily #1}}
+\newcommand*{\switchitem}[1]{\item[\switch{#1}]}
+\newcommand{\argument}[1]{\texttt{\char`\"#1\char`\"}}
+
+\input{modules/othello.tex}
+\input{modules/bash.tex}
+
+\makeatletter
+\newcommand*{\gmshow@textheight}{\textheight}
+\newdimen\gmshow@@textheight
+\g@addto@macro\landscape{%
+	\gmshow@@textheight=\hsize
+	\renewcommand*{\gmshow@textheight}{\gmshow@@textheight}%
+}
+\def\Gm@vrule{%
+	\vrule width 0.2pt height\gmshow@textheight depth\z@
+}%
+\makeatother
+
+% Document
 \begin{document}
+\begin{titlepage}
+	\includegraphics[width=0.75\textwidth]{img/fav.pdf}
+	\begin{center}
 
-	\begin{titlepage}
-		\includegraphics[width=0.75\textwidth]{img/fav.pdf}
-		\begin{center}
+		\vspace{2cm}
 
-			\vspace{2cm}
+		\Huge
+		Semestrální práce KIV/PC
 
-			\Huge
-			Semestrální práce KIV/PC
+		\vspace{1cm}
 
-			\vspace{1cm}
+		\LARGE
+		\textbf{Algoritmus Minimax v deskové hře Othello}
 
-			\LARGE
-			Othello
+		\vfill
 
-			\vfill
+		\vspace{0.5cm}
 
-			\vspace{0.5cm}
+		\normalsize
+		\raggedright
+			Student: Tomáš Tobrman \\
+			Osobní číslo: A22B0199P \\
+			Email: ttobrman@students.zcu.cz \\
+			Datum: \today
+		\vspace{0.2cm}
 
-			\normalsize
-			\raggedright
-				Student: Tomáš Tobrman \\
-				Osobní číslo: A22B0199P \\
-				Email: ttobrman@students.zcu.cz \\
-				Datum: \today
-			\vspace{0.2cm}
+	\end{center}
+\end{titlepage}
 
-		\end{center}
-	\end{titlepage}
+\tableofcontents
 
-	\input{sec/section1}
+\newpage
 
-	\input{sec/section2}
+\listoffigures
 
-	\input{sec/section3}
+\listoftables
 
-	\input{sec/section4}
+\lstlistoflistings
 
-	\input{sec/section5}
+\newpage
+
+\section{Zadání}
+
+Naprogramujte v~jazyce ANSI~C přenositelnou \textbf{konzolovou aplikaci}, která umožní lidským uživatelům či umělým inteligencím změřit si své síly v~deskové hře \textbf{Othello}. Vámi implementovaná umělá inteligence bude pro zjištění optimálního tahu využívat algoritmus \textbf{Minimax} rozšířený o~tzv. \textbf{Alfa-beta prořezávání}. Jednotlivé hry bude možné uložit a~případně později načíst v~definovaném formátu do textového souboru. Podoba konzolového rozhraní je plně ve vaší kompetenci.
+
+\begin{flushleft}
+	Kompletní verzi zadání \cite{assign} můžete najít na této webové adrese:
+	\linebreak
+	\small
+	\url{https://www.kiv.zcu.cz/studies/predmety/pc/data/works/sw2023-03.pdf}
+	\normalsize
+\end{flushleft}
+
+\input{sec/section2}
+
+\input{sec/section3}
+
+\input{sec/section4}
+
+\newpage
+
+\section{Závěr}
+
+Věřím, že veškeré požadavky zadání projektu \cite{assign} byly splněny, avšak některé z~implementací by se stále daly zlepšit. Například, jak bylo zmíněno v~sekci \ref{sec:turncheck} na straně \pageref{sec:turncheck}, kontrola tahu při samotném pokusu o~něj by byla rychlejší, než počítat všechny možné tahy předem. Zároveň by tato změna ušetřila na paměti, jelikož by nebylo potřeba ukládat výsledek kontroly pro každé herní pole.
+
+Dalším vylepšením by byla evaluační funkce stavu hry. Existují určité pozice, které dávají hráči vyšší taktickou výhodu než jiné. Kvůli dynamické velikosti hrací plochy si ale nejsem jistý, jak by se takový problém řešil obecně.
+
+\renewcommand{\refname}{Zdroje}
+\bibliographystyle{plain}
+\bibliography{references}
 
 \end{document}

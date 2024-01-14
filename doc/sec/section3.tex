@@ -1,1 +1,159 @@
 \section{Popis implementace}
+
+Aplikace hry \textbf{Othello} s~algoritmem \textbf{Minimax} byla implementována v~jazyce \textbf{ANSI~C~90} na operačním systému \textbf{Mac~OS~X 11.7.10 Big Sur}. Projekt je kompletně popsán dokumentačními komentáři a~byl rozdělen do několika modulů pro rozdělení odpovědnosti a~přehlednost zdrojového kódu.
+
+\subsection{Obsah souboru \lstinline{include/othello/types.h}}
+
+Hlavičkový soubor \lstinline{include/othello/types.h} obsahuje všechny typové definice (\lstinline{typedef}), struktury (\lstinline{struct}) a~výčtové typy (\lstinline{enum}). Tato podsekce probere typy a~struktury nutné pro zbytek programu.
+
+\subsubsection{Datový typ \lstinline{bool}}
+
+V~projektu byl často využit vlastně definovaný logický datový typ \lstinline{bool} (Konzole \ref{src:typebool}, strana \pageref{src:typebool}), který v~základním jazyce \textbf{ANSI~C} neexistuje. Tento datový typ byl vytvořen kvůli přehlednosti, aby bylo jasné, co funkce vrací, namísto typu \lstinline{int}, který může představovat velké množství hodnot.
+
+\lstinputlisting[
+	style=source,
+	firstline=25,
+	lastline=31,
+	caption={Vlastní implementace logického datového typu \lstinline{bool}.},
+	label={src:typebool}
+]{../include/othello/types.h}
+
+\subsubsection{Hrací plocha \lstinline{board_t}}
+
+\lstinputlisting[
+	style=source,
+	firstline=53,
+	lastline=65,
+	caption={Struktura hrací plochy \lstinline{board_t}.},
+	label={src:typeboard}
+]{../include/othello/types.h}
+
+Hrací plocha hry \textbf{Othello} je v~tomto programu reprezentována strukturou, která obsahuje všechny informace o~její velikosti a~datech (Konzole \ref{src:typeboard}, strana \pageref{src:typeboard}) jednorozměrným polem o~velikosti $w\cdot h$, kde $w$~je šířka plochy, nebo-li počet sloupců (\lstinline[style=source]{unsigned int width}), a~$h$~je výška plochy, nebo-li počet řádků (\lstinline[style=source]{unsigned int height}). Pole \lstinline[style=source]{player_color *data} obsahuje pozice všech kamenů. Pole \lstinline[style=source]{unsigned int *moves} ukazuje, na kterých pozicích je možné udělat validní tah.
+
+\subsubsection{Historie \lstinline{history_t}} \label{sec:typehistory}
+
+Struktura \lstinline{history_t} (Konzole \ref{src:typehistory}, strana \pageref{src:typehistory}) pouze existuje jako \emph{obal} nad polem \lstinline[style=source]{char *}. Dalším prvkem této struktury je \lstinline[style=source]{size_t size}, což znázorňuje počet prvků v~poli \lstinline[style=source]{char **commands}.
+
+\lstinputlisting[
+	style=source,
+	firstline=67,
+	lastline=73,
+	caption={Struktura historie \lstinline{history_t}.},
+	label={src:typehistory}
+]{../include/othello/types.h}
+
+\subsubsection{Informace hráče \lstinline{player_t}}
+
+Do potřebných informací o~hráči (Konzole \ref{src:typeplayer}, strana \pageref{src:typeplayer}) patří barva kamenů, se kterými hraje (řádek 4), typ (řádek 6), jméno (řádek 12) a~maximální hloubka algoritmu \textbf{Minimax} (řádek 16).
+
+\lstinputlisting[
+	style=source,
+	firstline=75,
+	lastline=93,
+	caption={Struktura informací o~hráči \lstinline{player_t}.},
+	label={src:typeplayer}
+]{../include/othello/types.h}
+
+\subsubsection{Nastavení a stav aplikace \lstinline{settings_t}}
+
+Veškeré nastavení a~stav aplikace je obsaženo ve struktuře \lstinline{settings_t} (Konzole \ref{src:typesettings}, strana \pageref{src:typesettings}). Její funkce je sloužit jako seskupení velkého množství proměnných, které by jinak musely žít na zásobníku. Tyto hodnoty se často předávají dalším funkcím, takže je lepší předávat jeden ukazatel, který má přístup ke všemu. Struktura například obsahuje definice obou hráčů (řádky 4 a~6), vlastnosti hrací desky (řádky 8--16), vstupní a výstupní soubory (řádky 20 a~22) a~zda má aplikace skončit (řádek 24).
+
+\newpage
+
+\lstinputlisting[
+	style=source,
+	firstline=95,
+	lastline=121,
+	caption={Struktura nastavení a~stavu aplikace \lstinline{settings_t}.},
+	label={src:typesettings}
+]{../include/othello/types.h}
+
+\subsection{Výpočet možných tahů}
+
+V~tomto projektu jsem se rozhodl použít způsob výpočtu všech možných tahů předem. Výpočet teprve při pokusu o~tah by byl teoreticky rychlejší a~nebylo by zapotřebí přídavného pole ve struktuře \lstinline{board_t} (Konzole \ref{src:typeboard}, strana \pageref{src:typeboard}, řádek 12).
+
+\lstinputlisting[
+	style=source,
+	firstline=251,
+	lastline=265,
+	caption={Cyklus pro kontrolu tahů v modulu \texttt{src/board.c}.},
+	label={src:boardcalc}
+]{../src/board.c}
+
+Funkce \lstinline[style=source]{void board_calculate(...)} v~modulu \argument{othello/board.h} vykoná výpočet možných tahů pro danou barvu kamenů \lstinline[style=source]{player_color color}. Výpočet tedy koná nad každým herním polem (Konzole \ref{src:boardcalc}, strana \pageref{src:boardcalc}). Pokud pole není zabráno kamenem, pak začne kontrola okolo, kde se hledají kameny protějšího hráče.
+
+\lstinputlisting[
+	style=source,
+	firstline=214,
+	lastline=231,
+	caption={Kontrola herních polí ve $3\times3$ rozmezí.},
+	label={src:board3x3}
+]{../src/board.c}
+
+Je-li kámen protějšího hráče nalezen, algoritmus pokračuje v~jeho směru. Narazí-li na prázdné místo nebo konec hrací desky, navrátí se hodnota $0$, která značí, že v~tomto směru lze sebrat $0$ kamenů. Pokud ale je nalezen kámen hráče vykonávající tento tah, pak se protější kameny berou jako obklíčené a~funkce \lstinline[style=source]{static int check_direction(...)} navrátí počet obklíčených kamenů v~tomto směru.
+
+Pokud parametr \lstinline[style=source]{bool flip} má hodnotu \lstinline{true}, pak při nalezení validního tahu funkce \lstinline[style=source]{static int check_direction(...)} také \emph{obrátí} protější kameny v~opačném směru, dokud nenarazí na původní pozici kontroly (Konzole \ref{src:boardflip}, strana \pageref{src:boardflip}).
+
+\lstinputlisting[
+	style=source,
+	firstline=177,
+	lastline=184,
+	caption={Otočení protějších kamenů.},
+	label={src:boardflip}
+]{../src/board.c}
+
+\subsection{Historie hry}
+
+Vždy po úspěšném tahu nebo přeskočení tahu se použitý příkaz zapíše do historie, aby bylo možné jej následně uložit do výstupního souboru. Historie je implementována jako pole řetězců (sekce~\ref{sec:typehistory}, strana~\pageref{sec:typehistory}).
+
+\newpage
+
+Pro přidání prvku do historie je třeba ho nejdříve zkopírovat. Pokud by se uložil originální řetězec, pak by pole drželo adresu pouze tohoto jednoho řetězce a~celá historie by byla přepsána posledním daným příkazem.
+
+\lstinputlisting[
+	style=source,
+	firstline=51,
+	lastline=60,
+	caption={Přidání příkazu do historie.},
+	label={src:historyadd}
+]{../src/history.c}
+
+\subsection{Minimax algoritmus}
+
+Implementace algoritmu \textbf{Minimax} s~\textbf{Alpha-Beta prořezáváním} následovala pseudokód z~\textbf{YouTube} videa od \textbf{Sebastiana Lague} \cite{seblag}, který stručně popsal jeho funkčnost. Jeho implementace využívá rekurzivní volání funkce algoritmu pro stavbu vyhledávacího stromu.
+
+\lstinputlisting[
+	style=source,
+	firstline=41,
+	lastline=66,
+	caption={Část algoritmu \textbf{Minimax} pro maximalizujícího hráče.},
+	label={src:minimaxmaximizing}
+]{../src/minimax.c}
+
+Maximalizující hráč (Konzole \ref{src:minimaxmaximizing}, strana \pageref{src:minimaxmaximizing}) porovnává aktuální evaluaci s~maximální evaluací co dostal. Pokud aktualní evaluace stavu hry je větší než dosud maximální evaluace, tato hodnota se nahradí novou a~pokud existují ukazatele na hratelnou pozici, nastaví se také jejich nové hodnoty. Jako součást \textbf{Alpha-Beta prořezávání} se také porovnává hodnota \lstinline{alpha}. Pokud je hodnota \lstinline{alpha} momentálně větší než hodnota \lstinline{beta} nebo je jí rovna, pak cyklus končí a~neprovádí se v~této větvi stromu další evaluace.
+
+Minimalizující hráč (Konzole \ref{src:minimaxminimazing}, strana \pageref{src:minimaxminimazing}) provádí podobné kroky jako ten maximalizující, ale porovnání je převrácené. Tentokrát se hledá nejnižší evaluace a~nastavuje se hodnota \lstinline{beta}. Znovu, pokud je hodnota \lstinline{beta} menší než hodnota \lstinline{alpha} nebo je jí rovna, pak cyklus končí a~neprovádí se další evaluace v~této větvi rozhodovacího stromu.
+
+\lstinputlisting[
+	style=source,
+	firstline=67,
+	lastline=92,
+	caption={Část algoritmu \textbf{Minimax} pro minimalizujícího hráče.},
+	label={src:minimaxminimazing}
+]{../src/minimax.c}
+
+\lstinputlisting[
+	style=source,
+	firstline=28,
+	lastline=39,
+	caption={Statická evaluace stavu hry. Tato část kódu se nachází na začátku funkce.},
+	label={src:minimaxstatic}
+]{../src/minimax.c}
+
+\newpage
+
+Při každé evaluaci stavu se vytvoří kopie struktury hrací desky \lstinline{board_t} na které je následně proveden ověřovaný tah. Tato kopie je po rekurzivním volání hned uvolněna, jelikož není dále potřeba.
+
+Pokud se algoritmus rekurzivním voláním dostane na hloubku $0$, nebo na této hloubce začne, provede se statická evaluace stavu hry (Konzole \ref{src:minimaxstatic}, strana \pageref{src:minimaxstatic}). Pokud existují ukazatele na hodnoty tahu \lstinline{play_col} a~\lstinline{play_row}, pak jsou nastaveny na první možný tah, kterým bude pozice nejvíce vlevo nahoře. Následně se vypočte hodnota evaluace jako rozdíl počtů kamenů každé barvy na hrací desce. Tato hodnota je vrácena jako návratová hodnota funkce. Pokud byl tento stav dosažen při konstrukci rozhodovacího stromu, pak je tato hodnota použita při porovnání popsaných výše.
+
+Nastavené hodnoty \lstinline{play_col} a~\lstinline{play_row} jsou použity jako další návratové hodnoty funkce, kterými algoritmus dokáže odehrát zvolený tah. Pokud tah nebyl zvolen, pak zůstávají tyto proměnné s~hodnotami $0$~a~jsou dále vyhodnoceny jako příkaz \switch{pass} a tah hráče je přeskočen. Toto může nastat pokud neexistuje žádný možný tah, který by hráč mohl vykonat.

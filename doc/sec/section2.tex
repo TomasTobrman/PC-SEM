@@ -1,11 +1,131 @@
 \section{Analýza úlohy}
 
-	\subsection{Pravidla hry}
+Tato kapitola bude poukazovat na různá řešení problémů, které se ukázaly při tvorbě funkční deskové hry \textbf{Othello} s~implementací algoritmu \textbf{Minimax} a~jeho rozšíření \textbf{Alpha-Beta prořezávání} v~jazyce \textbf{ANSI C}.
 
-		\subsubsection{Reprezentace hrací plochy}
+\subsection{Pravidla hry}
 
-		\subsubsection{Výpočet možných tahů}
+Pravidla deskové hry \textbf{Othello} se zdají jednoduchá, ale stále nemusí být triviální implementovat v~programovacím jazyce. Tato sekce probere pravidla pro vykonání tahu a~konec hry.
 
-	\subsection{Konzolové argumenty}
+Hrací plocha má podobu $8\times8$ čtvercových polí uskupených na desku (Obrázek \ref{img:board_init}, strana \pageref{img:board_init}). V~počátečním stavu hry se položí $4$ kameny doprostřed hrací plochy tak, že na polích [4;4] a~[5;5] je viditelná část kamenů bílá a~zbylé dva kameny mají viditelnou barvu černou.
 
-	\subsection{Minimax algoritmus}
+\begin{figure}[h]
+	\centering
+
+	\begin{othellogame}{8}{8}
+		\whitestone{4}{4}
+		\whitestone{5}{5}
+		\blackstone{4}{5}
+		\blackstone{5}{4}
+	\end{othellogame}
+
+	\caption{Výchozí stav hrací plochy Othello}
+	\label{img:board_init}
+\end{figure}
+
+Narozdíl od šachů nebo dámy, ve hře Othello začíná hráč s~\emph{černými} kameny. Tah se dá provést, pokud hráč v~řadě obklíčí kameny protihráče. Toto může být v~jakémkoliv z~osmi směrů. Obklíčené kameny se obrátí na barvu hráče, který tento tah provedl. Pokud by tah nezajmul protější kameny, není validním tahem a~hráč musí vybrat jiný. Dalším možným tahem je přeskočení svého kola. Toto je ale možné pouze v~případě, kdy nelze odehrát nic jiného.
+
+V~počátečním stavu jsou čtyři možné tahy, znázorněné na obrázku \ref{img:board_moves} na straně \pageref{img:board_moves} průhlednými kameny. Tahy jsou číslovány v~pořadí zleva doprava a~shora dolů.
+
+\begin{figure}[h]
+	\centering
+
+	\begin{othellogame}{8}{8}
+		\whitestone{4}{4}
+		\whitestone{5}{5}
+		\blackstone{4}{5}
+		\blackstone{5}{4}
+		
+		\blackpossiblestone{3}{4}{1}
+		\blackpossiblestone{4}{3}{2}
+		\blackpossiblestone{5}{6}{3}
+		\blackpossiblestone{6}{5}{4}
+	\end{othellogame}
+
+	\caption{Možné tahy z~počátečního stavu}
+	\label{img:board_moves}
+\end{figure}
+
+Zvolí-li hráč tah číslo 1 (Obrázek \ref{img:board_capture}, strana \pageref{img:board_capture}), zabere protější kámen na pozici [4;4] a~přetočí ho na svou barvu. Dále hraje protější hráč.
+
+\begin{figure}[h]
+	\centering
+
+	\begin{othellogame}{8}{8}
+		\blackstone{4}{4}
+		\whitestone{5}{5}
+		\blackstone{4}{5}
+		\blackstone{5}{4}
+		\blackstone{3}{4}
+		
+		\whitepossiblestone{3}{3}{1}
+		\whitepossiblestone{3}{5}{2}
+		\whitepossiblestone{5}{3}{3}
+	\end{othellogame}
+
+	\caption{Zabrání protějšího kamene}
+	\label{img:board_capture}
+\end{figure}
+
+Hráči se střídají ve hraní dokud ani jeden hráč nemůže udělat tah nebo celá plocha je zabrána kameny. Hráč s~vyšším počtem kamenů na ploše vyhrává.
+
+\subsection{Reprezentace hrací plochy}
+
+Hrací deska se díky pevné a~opakující se struktuře dá jednoduše v~programu reprezentovat jako dvourozměrná matice, či jednorozměrné pole, kde kameny jsou reprezentovány číselnou hodnotou podle toho, ke kterému z~hráčů patří. Toto jednoduché řešení umožňuje pomocí dvourozměrných souřadnic čtení a~změnu jednotlivých polí hrací plochy v~$O(1)$ složitosti.
+
+Rozdíl mezi jednorozměrným polem a~dvourozměrnou maticí je adresování jednotlivých prvků. U~jednorozměrného pole, resp. dvourozměrné matice, musíme použít jednorozměrný index, resp. dvourozměrné souřadnice. Výběr záleží pouze na vlastní preferenci, jelikož je možný převod mezi oběma způsoby adresování. Dvourozměrné souřadnice se převedou na jednorozměrný index pomocí $i=y\cdot w+x$, kde $i$ je výsledný index, $[x;y]$ jsou komponenty dvourozměrných souřadnic s~počátkem $[0;0]$ a~$w$ je šířka hracího pole. Jednorozměrný index se převádí na dvourozměrné souřadnice s~počátkem $[0;0]$ se stejnými proměnnými přes $x=i\mod w$ a~$y=i/w$.
+
+\subsection{Ověření tahu} \label{sec:turncheck}
+
+Kontrola se může provádět při pokusu o~tah, kde se ověří pouze jedna pozice. Další možností je provést kontrolu všech polí před zahájením tahu a~uložit jejich výsledek do pole či matice. Pokud se počítá s~nejhorším případem, kde hráč bude vybírat zásadně neplatná pole a~toto provede víckrát, než je polí na hrací desce, pak je výhodnější vše vypočítat předem. V~reálné aplikaci však k~tomuto většinou nedojde a~rychlejší by tedy byla kontrola teprve při pokusu o~tah.
+
+\subsection{Minimax algoritmus}
+
+Algoritmus \textbf{Minimax} je jednoduchý algoritmus pro vyhodnocování nejlepšího tahu. K~tomuto uvažuje, že protější hráč dělá totéž. Tedy, i~když pro \textbf{Minimax} nebude momentální tah výhodný, zamezí tím alespoň protějšímu hráči odehrát svůj nejlepší tah.
+
+\textbf{Minimax} funguje na principu rozhodovacího stromu (Obrázek \ref{img:minimax}, strana \pageref{img:minimax}). Každý uzel představuje stav hry, do kterého se program dostane, bude-li následovat cestu k~němu. Nejpřirozenější implementací takové struktury je \textbf{rekurze}, kde se prvně vyhodnotí maximální hloubka stromu a~výsledek se přenáší zpětně až do kořene. Ten následně dokáže vyhodnotit, který z~příslušných tahů vede k nejlepšímu stavu.
+
+\begin{figure}[h]
+
+\centering
+
+\begin{tikzpicture}[
+	thick,
+	level distance=16mm,
+	every node/.style={circle, align=center, draw=black, inner sep=3pt},
+	whitenode/.style={fill=whitestone, text=black},
+	blacknode/.style={fill=blackstone, text=white},
+	level 1/.style={sibling distance=40mm, nodes={blacknode}},
+	level 2/.style={sibling distance=10mm, nodes={whitenode}}
+]
+\node[whitenode]{-3}
+	child[red!60]{node[draw=red!60]{-3}
+		child[red!60]{node[draw=red!60]{-3}}
+		child[black]{node{-3}}
+		child[black]{node{-3}}
+	}
+	child{node{-3}
+		child{node{-3}}
+		child{node{-3}}
+		child{node{-3}}
+		child{node{-3}}
+	}
+	child{node{-5}
+		child{node{-5}}
+		child{node{-3}}
+		child{node{-5}}
+		child{node{-3}}
+	};
+\end{tikzpicture}
+
+\caption{Rozhodovací strom vytvořený algoritmem \textbf{Minimax} s~vyhledávací hloubkou $2$. Hráč s~bílými kameny je maximalizující, hráč s~černými kameny je minimalizující.}
+\label{img:minimax}
+
+\end{figure}
+
+\subsubsection{Evaluace stavu hry}
+
+Implementace samotného vyhodnocení stavů je na každém programu a~může se značně lišit mezi typy her. V~případě hry \textbf{Othello} lze využít jednoduché ohodnocení, kde se pouze porovná počet vlastních kamenů s~těmi protihráče. Některé pozice jsou však výhodnější než jiné. Například, pokud hráč ovládá okraje hrací plochy, pak má tyto pozice zajištěny pro sebe, jelikož není jak obklíčit takové kameny. Nejlepšími pozicemi jsou rohy desky, kde je nemožné takový kámen zabrat protihráčem. Naopak tyto kameny dále pomáhají k~otočení dalších kamenů.
+
+\subsubsection{Alpha-Beta prořezávání}
+
+Rozšíření algoritmu \textbf{Minimax}, zvané \textbf{Alpha-Beta prořezávání}, ho dokáže v~průměru zrychlit, ale není tomu zaručeno. Rozšíření funguje na principu, kde není třeba provádět další výpočty v~aktuální větvi stromu, jelikož algoritmus již nedostane lepší výsledek, než který je mu již přístupný. Největší vliv na rychlost algoritmu by tedy rozšíření mělo, pokud by možné tahy byly již seřazeny od nejvíce do nejméně výhodných.

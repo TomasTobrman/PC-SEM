@@ -15,3 +15,9 @@ desktop.ini
 *.out
 *.synctex.gz
 *.toc
+*.bbl
+*.blg
+*.lof
+*.lol
+*.lot
+doc/*.pdf

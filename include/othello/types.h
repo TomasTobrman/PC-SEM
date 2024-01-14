@@ -22,10 +22,15 @@
 
 /* ==== ENUMS =============================================================== */
 
-/* bool type implementation */
-typedef enum { false = 0, true = 1 } bool;
+/** Logical bool type implementation */
+typedef enum {
+    /* logical false */
+    false = 0,
+    /* logical true */
+    true = 1
+} bool;
 
-/* What is the player played by */
+/** What is the player played by */
 typedef enum {
     /* Human player */
     PLAYER_TYPE_HUMAN = 0,
@@ -33,7 +38,7 @@ typedef enum {
     PLAYER_TYPE_MINIMAX = 1
 } player_type;
 
-/* Color of the player stone */
+/** Color of the player stone */
 typedef enum {
     /* Stone has no color or cell is blank */
     PLAYER_COLOR_NONE = 0,
@@ -45,7 +50,7 @@ typedef enum {
 
 /* ==== STRUCTS ============================================================= */
 
-/* Board structure holding the game data and available moves */
+/** Board structure holding the game data and available moves */
 typedef struct {
     /* Number of board columns */
     unsigned int width;
@@ -59,7 +64,7 @@ typedef struct {
     unsigned int *moves;
 } board_t;
 
-/* Command history */
+/** Command history */
 typedef struct {
     /* Array of commands */
     char **commands;
@@ -67,7 +72,7 @@ typedef struct {
     size_t size;
 } history_t;
 
-/* Player info */
+/** Player info */
 typedef struct {
     /* Player color */
     player_color color;
@@ -87,7 +92,7 @@ typedef struct {
     bool depth_set;
 } player_t;
 
-/* Application settings */
+/** Application settings */
 typedef struct {
     /* Black Player */
     player_t *player_black;

@@ -36,9 +36,10 @@ int minimax(player_color color, board_t *board, int depth, int alpha, int beta,
         }
         eval = board_count(board, color) - board_count(board, other_color);
         return eval;
-    };
+    }
 
-    if (maximizing) { /* calculate evaluation for maximizing player */
+    /* calculate evaluation for maximizing player */
+    if (maximizing) {
         ret_eval = INT_MIN;
         for (i = 0; i < board->size; ++i) {
             if (!board->moves[i]) continue;
@@ -62,7 +63,9 @@ int minimax(player_color color, board_t *board, int depth, int alpha, int beta,
             alpha = alpha > eval ? alpha : eval;
             if (beta <= alpha) break;
         }
-    } else { /* calculate evaluation for minimazing player */
+    }
+    /* calculate evaluation for minimazing player */
+    else {
         ret_eval = INT_MAX;
         for (i = 0; i < board->size; ++i) {
             if (!board->moves[i]) continue;
